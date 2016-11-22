@@ -22,11 +22,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
-        public VertexCollection Vertices
-        {
-            get { return mVertices; }
-            set { mVertices = value; }
-        }
+        public VertexCollection Vertices;
         /// <summary>
         /// 
         /// </summary>
@@ -34,11 +30,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
-        public HalfEdgeCollection HalfEdges
-        {
-            get { return mHalfEdges; }
-            set { mHalfEdges = value; }
-        }
+        public HalfEdgeCollection HalfEdges;
         /// <summary>
         /// 
         /// </summary>
@@ -46,11 +38,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
-        public EdgeCollection Edges
-        {
-            get { return mEdges; }
-            set { mEdges = value; }
-        }
+        public EdgeCollection Edges;
         /// <summary>
         /// 
         /// </summary>
@@ -58,11 +46,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
-        public FaceCollection Faces
-        {
-            get { return mFaces; }
-            set { mFaces = value; }
-        }
+        public FaceCollection Faces;
         /// <summary>
         /// 
         /// </summary>
@@ -118,7 +102,13 @@ namespace HelixToolkit.Wpf.SharpDX
 
             for (int i = 0; i < positions.Count; i++)
             {
-                this.Vertices.Add(positions[i], normals != null ? normals[i]);
+                var vert = new VertexTraits(positions[i]);
+                if (normals != null)
+                    vert.Normal = normals[i];
+                if (texcoords != null)
+                    vert.TextureCoordinate = texcoords[i];
+
+                this.Vertices.Add(vert);
             }
 
             for (int i = 0; i < triangleIndices.Count; i += 3)
