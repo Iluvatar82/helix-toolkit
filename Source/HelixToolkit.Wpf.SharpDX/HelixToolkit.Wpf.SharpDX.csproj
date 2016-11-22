@@ -190,6 +190,11 @@
     <Compile Include="Model\Elements3D\PointGeometryModel3D.cs" />
     <Compile Include="Model\Geometry\BillboardSingleText3D.cs" />
     <Compile Include="Model\Geometry\BillboardText3D.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\Edge.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\Face.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\HalfEdge.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\Mesh.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\Vertex.cs" />
     <Compile Include="Model\Geometry\PointGeometry3D.cs" />
     <Compile Include="Properties\AssemblyDescription.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
