@@ -133,9 +133,5 @@ namespace HelixToolkit.Wpf.SharpDX
             this.mFrom = from;
         }
         #endregion Constructors
-
-
-        #region Functions
-        #endregion Functions
     }
 }

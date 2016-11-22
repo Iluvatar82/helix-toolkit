@@ -82,9 +82,5 @@ namespace HelixToolkit.Wpf.SharpDX
             this.mHalfEdge = half;
         }
         #endregion Constructors
-
-
-        #region Functions
-        #endregion Functions
     }
 }

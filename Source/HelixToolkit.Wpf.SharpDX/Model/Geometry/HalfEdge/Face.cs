@@ -13,11 +13,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
-        public Vector3 Normal;
-        /// <summary>
-        /// 
-        /// </summary>
-        public float Area;
+        public FaceTraits Traits;
         /// <summary>
         /// 
         /// </summary>
@@ -160,15 +156,119 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="half"></param>
-        public Face(HalfEdge half)
+        /// <param name="traits"></param>
+        public Face(FaceTraits traits)
         {
-            this.mHalfEdge = half;
+            this.Traits = traits;
         }
         #endregion Constructors
 
 
         #region Functions
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="face"></param>
+        /// <returns></returns>
+        public Edge FindEdgeTo(Face face)
+        {
+            foreach (var half in this.HalfEdges)
+            {
+                if (half.Opposite.Face == face)
+                {
+                    return half.Edge;
+                }
+            }
+            return null;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vertex"></param>
+        /// <returns></returns>
+        public HalfEdge FindHalfedgeTo(Vertex vertex)
+        {
+            foreach (var half in this.HalfEdges)
+            {
+                if (half.To == vertex)
+                {
+                    return half;
+                }
+            }
+            return null;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Edge GetEdge(int index)
+        {
+            int count = 0;
+            foreach (var edge in this.Edges)
+            {
+                if (count == index)
+                {
+                    return edge;
+                }
+                ++count;
+            }
+            throw new ArgumentOutOfRangeException("index");
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Face GetFace(int index)
+        {
+            int count = 0;
+            foreach (var face in this.Faces)
+            {
+                if (count == index)
+                {
+                    return face;
+                }
+                ++count;
+            }
+            throw new ArgumentOutOfRangeException("index");
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public HalfEdge GetHalfedge(int index)
+        {
+            int count = 0;
+            foreach (var half in this.HalfEdges)
+            {
+                if (count == index)
+                {
+                    return half;
+                }
+                ++count;
+            }
+            throw new ArgumentOutOfRangeException("index");
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public Vertex GetVertex(int index)
+        {
+            int count = 0;
+            foreach (var vert in this.Vertices)
+            {
+                if (count == index)
+                {
+                    return vert;
+                }
+                ++count;
+            }
+            throw new ArgumentOutOfRangeException("index");
+        }
         #endregion Functions
     }
 }

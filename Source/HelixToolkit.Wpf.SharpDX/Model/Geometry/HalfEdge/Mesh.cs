@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using HelixToolkit.Wpf.SharpDX;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,33 +8,13 @@ using System.Threading.Tasks;
 
 namespace HelixToolkit.Wpf.SharpDX
 {
-    public class Mesh
+    public partial class Mesh
     {
         #region Variables and Properties
         /// <summary>
         /// 
         /// </summary>
-        private BoundingBox mBoundingBox;
-        /// <summary>
-        /// 
-        /// </summary>
-        public BoundingBox BoundingBox
-        {
-            get { return mBoundingBox; }
-            set { mBoundingBox = value; }
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool HasNormals;
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool HasTextureCoordinates;
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool HasTangents;
+        public MeshTraits Traits;
         /// <summary>
         /// 
         /// </summary>
@@ -41,7 +22,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
-        public List<Vertex> Vertices
+        public VertexCollection Vertices
         {
             get { return mVertices; }
             set { mVertices = value; }
@@ -53,7 +34,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
-        public List<HalfEdge> HalfEdges
+        public HalfEdgeCollection HalfEdges
         {
             get { return mHalfEdges; }
             set { mHalfEdges = value; }
@@ -65,7 +46,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
-        public List<Edge> Edges
+        public EdgeCollection Edges
         {
             get { return mEdges; }
             set { mEdges = value; }
@@ -77,7 +58,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
-        public List<Face> Faces
+        public FaceCollection Faces
         {
             get { return mFaces; }
             set { mFaces = value; }
@@ -94,17 +75,100 @@ namespace HelixToolkit.Wpf.SharpDX
         /// 
         /// </summary>
         public Mesh() {
-            this.Vertices = new List<Vertex>();
-            this.HalfEdges = new List<HalfEdge>();
-            this.Edges = new List<Edge>();
-            this.Faces = new List<Face>();
+            this.Traits = new SharpDX.MeshTraits();
+            this.Vertices = new VertexCollection(this);
+            this.HalfEdges = new HalfEdgeCollection(this);
+            this.Edges = new EdgeCollection(this);
+            this.Faces = new FaceCollection(this);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="geom"></param>
+        public Mesh(MeshGeometry3D geom)
+            :this()
+        {
+            createMesh(geom.Positions, geom.Indices, geom.Normals, geom.TextureCoordinates);
         }
         #endregion Constructors
 
 
         #region Functions
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="positions"></param>
+        /// <param name="triangleIndices"></param>
+        /// <param name="normals"></param>
+        /// <param name="texcoords"></param>
+        private void createMesh(IList<Vector3> positions, IList<int> triangleIndices, IList<Vector3> normals = null, IList<Vector2> texcoords = null)
+        {
+            if (normals != null)
+            {
+                if (normals.Count != positions.Count)
+                    throw new ArgumentException("Normals do not fit the point set.");
+            }
+            if (texcoords != null)
+            {
+                if (texcoords.Count != positions.Count)
+                    throw new ArgumentException("Texcoords do not fit the point set.");
+            }
 
+            int startVertex = this.mVertices.Count;
+
+            for (int i = 0; i < positions.Count; i++)
+            {
+                this.Vertices.Add(positions[i], normals != null ? normals[i]);
+            }
+
+            for (int i = 0; i < triangleIndices.Count; i += 3)
+            {
+                var tri = new[]
+                {
+                    this.Vertices[startVertex+triangleIndices[i]],
+                    this.Vertices[startVertex+triangleIndices[i+1]],
+                    this.Vertices[startVertex+triangleIndices[i+2]],
+                };
+                this.Faces.Add(tri);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="edge"></param>
+        protected void AppendToEdgeList(Edge edge)
+        {
+            edge.Index = mEdges.Count;
+            mEdges.Add(edge);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="face"></param>
+        protected void AppendToFaceList(Face face)
+        {
+            face.Index = mFaces.Count;
+            mFaces.Add(face);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="halfEdge"></param>
+        protected void AppendToHalfedgeList(HalfEdge halfEdge)
+        {
+            halfEdge.Index = mHalfEdges.Count;
+            mHalfEdges.Add(halfEdge);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vertex"></param>
+        protected void AppendToVertexList(Vertex vertex)
+        {
+            vertex.Index = mVertices.Count;
+            vertex.Mesh = this;
+            mVertices.Add(vertex);
+        }
         #endregion Functions
-
     }
 }
