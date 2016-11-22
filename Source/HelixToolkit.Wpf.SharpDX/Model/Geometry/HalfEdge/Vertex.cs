@@ -66,6 +66,29 @@ namespace HelixToolkit.Wpf.SharpDX
             get { return mIndex; }
             set { mIndex = value; }
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool OnBoundary
+        {
+            get
+            {
+                if (this.mHalfEdge == null)
+                {
+                    return true;
+                }
+
+                foreach (var half in this.HalfEdges)
+                {
+                    if (half.OnBoundary)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
         #endregion Variables and Properties
 
 
