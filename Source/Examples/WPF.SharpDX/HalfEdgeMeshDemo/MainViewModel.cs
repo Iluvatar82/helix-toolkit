@@ -25,7 +25,7 @@ namespace HalfEdgeMeshDemo
         /// <summary>
         /// Thickness of the Lines of the Triangulated Polygon
         /// </summary>
-        public double TriangulationThickness { get; set; }
+        public double BoundaryThickness { get; set; }
         /// <summary>
         /// The Grid
         /// </summary>
@@ -37,7 +37,7 @@ namespace HalfEdgeMeshDemo
         /// <summary>
         /// Color of the Triangle Lines
         /// </summary>
-        public SharpDX.Color TriangulationColor { get; private set; }
+        public SharpDX.Color BoundaryColor { get; private set; }
         /// <summary>
         /// Transform of the Grid
         /// </summary>
@@ -78,10 +78,6 @@ namespace HalfEdgeMeshDemo
         /// </summary>
         public Transform3D ModelTransform { get; private set; }
         /// <summary>
-        /// Transform of the Polygon Triangle Lines
-        /// </summary>
-        public Transform3D ModelLineTransform { get; private set; }
-        /// <summary>
         /// Collection of Materials to chose from
         /// </summary>
         public PhongMaterialCollection Materials
@@ -94,18 +90,18 @@ namespace HalfEdgeMeshDemo
         /// <summary>
         /// Draw the Triangles or not
         /// </summary>
-        private Boolean mShowTriangleLines;
+        private Boolean mShowBoundaries;
         /// <summary>
         /// Accessor to the Boolean
         /// </summary>
-        public Boolean ShowTriangleLines {
+        public Boolean ShowBoundaries {
             get
             {
-                return mShowTriangleLines;
+                return mShowBoundaries;
             }
             set
             {
-                mShowTriangleLines = value;
+                mShowBoundaries = value;
                 OnPropertyChanged("ShowTriangleLines");
             }
         }
@@ -164,8 +160,8 @@ namespace HalfEdgeMeshDemo
             
             // Lines Setup
             this.LineThickness = 1;
-            this.TriangulationThickness = .5;
-            this.ShowTriangleLines = true;
+            this.BoundaryThickness = 1;
+            this.ShowBoundaries = true;
 
             // Count Setup
             this.PointCount = 1000;
@@ -177,11 +173,10 @@ namespace HalfEdgeMeshDemo
             
             // Model Transformations
             this.ModelTransform = new TranslateTransform3D(0, 0, 0);
-            this.ModelLineTransform = new TranslateTransform3D(0, 0.001, 0);
             
             // Model Materials and Colors
             this.Material = PhongMaterials.PolishedBronze;
-            this.TriangulationColor = SharpDX.Color.Black;
+            this.BoundaryColor = SharpDX.Color.Black;
 
             // Grid Setup
             this.Grid = LineBuilder.GenerateGrid(Vector3.UnitY, -5, 5, 0, 10);
