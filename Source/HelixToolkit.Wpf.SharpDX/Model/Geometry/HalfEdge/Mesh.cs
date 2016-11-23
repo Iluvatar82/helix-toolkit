@@ -59,6 +59,11 @@ namespace HelixToolkit.Wpf.SharpDX
         /// 
         /// </summary>
         public Mesh() {
+            this.mVertices = new List<Vertex>();
+            this.mHalfEdges = new List<HalfEdge>();
+            this.mEdges = new List<Edge>();
+            this.mFaces = new List<Face>();
+
             this.Traits = new SharpDX.MeshTraits();
             this.Vertices = new VertexCollection(this);
             this.HalfEdges = new HalfEdgeCollection(this);
@@ -98,7 +103,7 @@ namespace HelixToolkit.Wpf.SharpDX
                     throw new ArgumentException("Texcoords do not fit the point set.");
             }
 
-            int startVertex = this.mVertices.Count;
+            int startVertex = this.Vertices.Count;
 
             for (int i = 0; i < positions.Count; i++)
             {

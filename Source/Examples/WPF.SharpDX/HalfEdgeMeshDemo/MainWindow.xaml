@@ -13,8 +13,8 @@
             <hx:AmbientLight3D Color="{Binding AmbientLightColor}"/>
             <hx:DirectionalLight3D Color="{Binding DirectionalLightColor}" Direction="{Binding DirectionalLightDirection}"/>
             <hx:LineGeometryModel3D x:Name="grid" Geometry="{Binding Grid}" Transform="{Binding GridTransform}" Color="{Binding GridColor}" Thickness="{Binding LineThickness}"/>
-            <hx:MeshGeometryModel3D x:Name="triangulatedPolygon" Transform="{Binding ModelTransform}" Material="{Binding Material}"></hx:MeshGeometryModel3D>
-            <hx:LineGeometryModel3D x:Name="lineTriangulatedPolygon" Transform="{Binding ModelLineTransform}" Color="{Binding TriangulationColor}" Thickness="{Binding TriangulationThickness}"></hx:LineGeometryModel3D>
+            <hx:MeshGeometryModel3D x:Name="baseMesh" Transform="{Binding ModelTransform}" Material="{Binding Material}"></hx:MeshGeometryModel3D>
+            <hx:LineGeometryModel3D x:Name="meshTriangleLines" Transform="{Binding ModelLineTransform}" Color="{Binding TriangulationColor}" Thickness="{Binding TriangulationThickness}"></hx:LineGeometryModel3D>
         </hx:Viewport3DX>
         <!--<StackPanel Width="200" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5">
             <ComboBox Margin="5" ItemsSource="{Binding Materials}" DisplayMemberPath="Name" SelectedValuePath="Name" SelectedValue="{Binding Material, Mode=TwoWay}" SelectionChanged="ComboBox_SelectionChanged"></ComboBox>
