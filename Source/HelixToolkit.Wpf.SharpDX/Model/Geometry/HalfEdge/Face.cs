@@ -1,9 +1,6 @@
-﻿using SharpDX;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HelixToolkit.Wpf.SharpDX
 {
@@ -11,15 +8,15 @@ namespace HelixToolkit.Wpf.SharpDX
     {
         #region Variables and Properties
         /// <summary>
-        /// 
+        /// The Face Traits.
         /// </summary>
         public FaceTraits Traits;
         /// <summary>
-        /// 
+        /// The HalfEdge of the Face.
         /// </summary>
         private HalfEdge mHalfEdge;
         /// <summary>
-        /// 
+        /// Accessor for the HalfEdge of the Face.
         /// </summary>
         public HalfEdge HalfEdge
         {
@@ -27,15 +24,15 @@ namespace HelixToolkit.Wpf.SharpDX
             set { mHalfEdge = value; }
         }
         /// <summary>
-        /// 
+        /// The Mesh.
         /// </summary>
         public Mesh Mesh { get { return this.mHalfEdge.Mesh; } }
         /// <summary>
-        /// 
+        /// The Index of the Face.
         /// </summary>
         private int mIndex;
         /// <summary>
-        /// 
+        /// Accessor for the Index of the Face.
         /// </summary>
         public int Index
         {
@@ -43,7 +40,7 @@ namespace HelixToolkit.Wpf.SharpDX
             set { mIndex = value; }
         }
         /// <summary>
-        /// 
+        /// Indicates if the Face is Part of the Boundary.
         /// </summary>
         public bool OnBoundary
         {
@@ -65,7 +62,7 @@ namespace HelixToolkit.Wpf.SharpDX
 
         #region Iterators and Counts
         /// <summary>
-        /// 
+        /// All Vertices defining this Face.
         /// </summary>
         public IEnumerable<Vertex> Vertices
         {
@@ -78,7 +75,7 @@ namespace HelixToolkit.Wpf.SharpDX
             }
         }
         /// <summary>
-        /// 
+        /// All HalfEdges defining this Face.
         /// </summary>
         public IEnumerable<HalfEdge> HalfEdges
         {
@@ -97,7 +94,7 @@ namespace HelixToolkit.Wpf.SharpDX
             }
         }
         /// <summary>
-        /// 
+        /// All Edges that are adjacent to this Face.
         /// </summary>
         public IEnumerable<Edge> Edges
         {
@@ -110,7 +107,7 @@ namespace HelixToolkit.Wpf.SharpDX
             }
         }
         /// <summary>
-        /// 
+        /// All Faces that are "directly" adjacent to this Face.
         /// </summary>
         public IEnumerable<Face> Faces
         {
@@ -126,37 +123,37 @@ namespace HelixToolkit.Wpf.SharpDX
             }
         }
         /// <summary>
-        /// 
+        /// Count of the Vertices.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Number of Vertices.</returns>
         public int VertexCount { get { return this.Vertices.Count(); } }
         /// <summary>
-        /// 
+        /// Count of the HalfEdges.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Number of HalfEdges.</returns>
         public int HalfEdgeCount { get { return this.HalfEdges.Count(); } }
         /// <summary>
-        /// 
+        /// Count of the Edges.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Number of Edges.</returns>
         public int EdgeCount { get { return this.Edges.Count(); } }
         /// <summary>
-        /// 
+        /// Count of the adjacent Faces.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Number of adjacent Faces.</returns>
         public int FaceCount { get { return this.Faces.Count(); } }
         #endregion Iterators and Counts
 
 
         #region Constructors
         /// <summary>
-        /// 
+        /// Default Constructor.
         /// </summary>
         public Face() { }
         /// <summary>
-        /// 
+        /// Constructor with FaceTraits.
         /// </summary>
-        /// <param name="traits"></param>
+        /// <param name="traits">The FaceTraits.</param>
         public Face(FaceTraits traits)
         {
             this.Traits = traits;
@@ -166,10 +163,10 @@ namespace HelixToolkit.Wpf.SharpDX
 
         #region Functions
         /// <summary>
-        /// 
+        /// Finds the Edge connecting this Face and the adjacent Face.
         /// </summary>
-        /// <param name="face"></param>
-        /// <returns></returns>
+        /// <param name="face">The adjacent Face.</param>
+        /// <returns>The Edge between this Face and the adjacent Face.</returns>
         public Edge FindEdgeTo(Face face)
         {
             foreach (var half in this.HalfEdges)
@@ -182,10 +179,10 @@ namespace HelixToolkit.Wpf.SharpDX
             return null;
         }
         /// <summary>
-        /// 
+        /// Finds the HalfEdge of this Face pointing to the Vertex.
         /// </summary>
-        /// <param name="vertex"></param>
-        /// <returns></returns>
+        /// <param name="vertex">The Vertex of the Face.</param>
+        /// <returns>The HalfEdge of the Face pointing to the Vertex.</returns>
         public HalfEdge FindHalfedgeTo(Vertex vertex)
         {
             foreach (var half in this.HalfEdges)
@@ -198,46 +195,28 @@ namespace HelixToolkit.Wpf.SharpDX
             return null;
         }
         /// <summary>
-        /// 
+        /// Get the indexed Vertex.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public Edge GetEdge(int index)
+        /// <param name="index">The Vertex-Index.</param>
+        /// <returns>The Vertex.</returns>
+        public Vertex GetVertex(int index)
         {
             int count = 0;
-            foreach (var edge in this.Edges)
+            foreach (var vert in this.Vertices)
             {
                 if (count == index)
                 {
-                    return edge;
+                    return vert;
                 }
                 ++count;
             }
             throw new ArgumentOutOfRangeException("index");
         }
         /// <summary>
-        /// 
+        /// Get the indexed HalfEdge.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public Face GetFace(int index)
-        {
-            int count = 0;
-            foreach (var face in this.Faces)
-            {
-                if (count == index)
-                {
-                    return face;
-                }
-                ++count;
-            }
-            throw new ArgumentOutOfRangeException("index");
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
+        /// <param name="index">The HalfEdge-Index.</param>
+        /// <returns>The HalfEdge.</returns>
         public HalfEdge GetHalfedge(int index)
         {
             int count = 0;
@@ -252,18 +231,36 @@ namespace HelixToolkit.Wpf.SharpDX
             throw new ArgumentOutOfRangeException("index");
         }
         /// <summary>
-        /// 
+        /// Get the indexed Edge.
         /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public Vertex GetVertex(int index)
+        /// <param name="index">The Edge-Index.</param>
+        /// <returns>The Edge.</returns>
+        public Edge GetEdge(int index)
         {
             int count = 0;
-            foreach (var vert in this.Vertices)
+            foreach (var edge in this.Edges)
             {
                 if (count == index)
                 {
-                    return vert;
+                    return edge;
+                }
+                ++count;
+            }
+            throw new ArgumentOutOfRangeException("index");
+        }
+        /// <summary>
+        /// Get the indexed Face.
+        /// </summary>
+        /// <param name="index">The Face-Index.</param>
+        /// <returns>The Face.</returns>
+        public Face GetFace(int index)
+        {
+            int count = 0;
+            foreach (var face in this.Faces)
+            {
+                if (count == index)
+                {
+                    return face;
                 }
                 ++count;
             }

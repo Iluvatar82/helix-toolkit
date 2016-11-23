@@ -1,10 +1,6 @@
-﻿using HelixToolkit.Wpf.SharpDX;
-using SharpDX;
+﻿using SharpDX;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HelixToolkit.Wpf.SharpDX
 {
@@ -12,43 +8,43 @@ namespace HelixToolkit.Wpf.SharpDX
     {
         #region Variables and Properties
         /// <summary>
-        /// 
+        /// The Mesh Traits.
         /// </summary>
         public MeshTraits Traits;
         /// <summary>
-        /// 
+        /// The List of Vertices in this Mesh.
         /// </summary>
         private List<Vertex> mVertices;
         /// <summary>
-        /// 
+        /// The List of Vertices in this Mesh (used to handle e.g. Add-Operations).
         /// </summary>
         public VertexCollection Vertices;
         /// <summary>
-        /// 
+        /// The List of HalfEdges in this Mesh.
         /// </summary>
         private List<HalfEdge> mHalfEdges;
         /// <summary>
-        /// 
+        /// The List of HalfEdges in this Mesh (used to handle e.g. Add-Operations).
         /// </summary>
         public HalfEdgeCollection HalfEdges;
         /// <summary>
-        /// 
+        /// The List of Edges in this Mesh.
         /// </summary>
         private List<Edge> mEdges;
         /// <summary>
-        /// 
+        /// The List of Edges in this Mesh (used to handle e.g. Add-Operations).
         /// </summary>
         public EdgeCollection Edges;
         /// <summary>
-        /// 
+        /// The List of Faces in this Mesh.
         /// </summary>
         private List<Face> mFaces;
         /// <summary>
-        /// 
+        /// The List of Faces in this Mesh (used to handle e.g. Add-Operations).
         /// </summary>
         public FaceCollection Faces;
         /// <summary>
-        /// 
+        /// Indicates if only Triangles should be allowed in the Mesh.
         /// </summary>
         public bool TrianglesOnly;
         #endregion Variables and Properties
@@ -56,10 +52,15 @@ namespace HelixToolkit.Wpf.SharpDX
 
         #region Constructors
         /// <summary>
-        /// 
+        /// Default Constructor.
         /// </summary>
         public Mesh() {
-            this.Traits = new SharpDX.MeshTraits();
+            // Initialize the Traits and the Collections.
+            this.Traits = new MeshTraits();
+            this.mVertices = new List<Vertex>();
+            this.mHalfEdges = new List<HalfEdge>();
+            this.mEdges = new List<Edge>();
+            this.mFaces = new List<Face>();
             this.Vertices = new VertexCollection(this);
             this.HalfEdges = new HalfEdgeCollection(this);
             this.Edges = new EdgeCollection(this);

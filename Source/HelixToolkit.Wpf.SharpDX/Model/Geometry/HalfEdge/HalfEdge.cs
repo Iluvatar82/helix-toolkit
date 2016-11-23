@@ -1,21 +1,14 @@
-﻿using SharpDX;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace HelixToolkit.Wpf.SharpDX
+﻿namespace HelixToolkit.Wpf.SharpDX
 {
     public class HalfEdge
     {
         #region Variables and Properties
         /// <summary>
-        /// 
+        /// The Start-Vertex.
         /// </summary>
         private Vertex mFrom;
         /// <summary>
-        /// 
+        /// Accessor for the Start-Vertex.
         /// </summary>
         public Vertex From
         {
@@ -23,11 +16,11 @@ namespace HelixToolkit.Wpf.SharpDX
             set { mFrom = value; }
         }
         /// <summary>
-        /// 
+        /// The End-Vertex.
         /// </summary>
         private Vertex mTo;
         /// <summary>
-        /// 
+        /// Accessor for the End-Vertex.
         /// </summary>
         public Vertex To
         {
@@ -35,11 +28,11 @@ namespace HelixToolkit.Wpf.SharpDX
             set { mTo = value; }
         }
         /// <summary>
-        /// 
+        /// The previous HalfEdge (regarding the HalfeEdge's Face).
         /// </summary>
         private HalfEdge mPrevious;
         /// <summary>
-        /// 
+        /// Accessor for the previous HalfEdge.
         /// </summary>
         public HalfEdge Previous
         {
@@ -47,11 +40,11 @@ namespace HelixToolkit.Wpf.SharpDX
             set { mPrevious = value; }
         }
         /// <summary>
-        /// 
+        /// The next HalfEdge (regarding the HalfeEdge's Face).
         /// </summary>
         private HalfEdge mNext;
         /// <summary>
-        /// 
+        /// Accessor for the next HalfEdge.
         /// </summary>
         public HalfEdge Next
         {
@@ -59,11 +52,12 @@ namespace HelixToolkit.Wpf.SharpDX
             set { mNext = value; }
         }
         /// <summary>
-        /// 
+        /// The opposite HalfEdge,
+        /// i.e. the HalfEdge with reversed "From" and "To" Vertices.
         /// </summary>
         private HalfEdge mOpposite;
         /// <summary>
-        /// 
+        /// Accessor for the opposite HalfEdge.
         /// </summary>
         public HalfEdge Opposite
         {
@@ -71,11 +65,11 @@ namespace HelixToolkit.Wpf.SharpDX
             set { mOpposite = value; }
         }
         /// <summary>
-        /// 
+        /// The Edge.
         /// </summary>
         private Edge mEdge;
         /// <summary>
-        /// 
+        /// Accessor for the Edge.
         /// </summary>
         public Edge Edge
         {
@@ -83,11 +77,11 @@ namespace HelixToolkit.Wpf.SharpDX
             set { mEdge = value; }
         }
         /// <summary>
-        /// 
+        /// The Face.
         /// </summary>
         private Face mFace;
         /// <summary>
-        /// 
+        /// Accessor for the Face.
         /// </summary>
         public Face Face
         {
@@ -95,15 +89,15 @@ namespace HelixToolkit.Wpf.SharpDX
             set { mFace = value; }
         }
         /// <summary>
-        /// 
+        /// The Mesh.
         /// </summary>
         public Mesh Mesh { get { return this.To.Mesh; } }
         /// <summary>
-        /// 
+        /// The Index of the HalfEdge.
         /// </summary>
         private int mIndex;
         /// <summary>
-        /// 
+        /// Accessor for the Index of the HalfEdge.
         /// </summary>
         public int Index
         {
@@ -111,7 +105,7 @@ namespace HelixToolkit.Wpf.SharpDX
             set { mIndex = value; }
         }
         /// <summary>
-        /// 
+        /// Indicates if the HalfEdge is Part of the Boundary.
         /// </summary>
         public bool OnBoundary { get { return this.mFace == null; } }
         #endregion Variables and Properties
@@ -119,14 +113,14 @@ namespace HelixToolkit.Wpf.SharpDX
 
         #region Constructors
         /// <summary>
-        /// 
+        /// Default Constructor.
         /// </summary>
         public HalfEdge() { }
         /// <summary>
-        /// 
+        /// Constructor with From an To Vertices specified.
         /// </summary>
-        /// <param name="to"></param>
-        /// <param name="from"></param>
+        /// <param name="to">To Vertex.</param>
+        /// <param name="from">From Vertex.</param>
         public HalfEdge(Vertex to, Vertex from)
         {
             this.mTo = to;
