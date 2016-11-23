@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace HelixToolkit.Wpf.SharpDX
 {
+    /// <summary>
+    /// A Vertex in the HalfEdge Data-Structure.
+    /// </summary>
     public class Vertex
     {
         #region Variables and Properties

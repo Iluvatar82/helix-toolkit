@@ -48,7 +48,16 @@ namespace HalfEdgeMeshDemo
             baseMesh.Transform = new TranslateTransform3D(0, 0, 5);
 
             var heBaseMesh = new Mesh((HelixToolkit.Wpf.SharpDX.MeshGeometry3D)baseMesh.Geometry);
+            /*var boundaryVertex = heBaseMesh.Vertices.FirstOrDefault(v => v.OnBoundary);
+            if (boundaryVertex != default(Vertex))
+            {
 
+            }
+            baseMeshBoundaries.Geometry = new LineGeometry3D()
+            {
+                Positions = ,
+                Indices = 
+            };*/
         }
     }
 }

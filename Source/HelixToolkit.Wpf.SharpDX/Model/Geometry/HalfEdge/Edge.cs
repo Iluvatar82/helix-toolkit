@@ -1,5 +1,8 @@
 ﻿namespace HelixToolkit.Wpf.SharpDX
 {
+    /// <summary>
+    /// An Edge in the HalfEdge Data-Structure.
+    /// </summary>
     public class Edge
     {
         #region Variables and Properties

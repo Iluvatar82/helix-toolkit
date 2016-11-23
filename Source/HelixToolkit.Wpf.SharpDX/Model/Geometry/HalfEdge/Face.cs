@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace HelixToolkit.Wpf.SharpDX
 {
+    /// <summary>
+    /// A Face in the HalfEdge Data-Structure.
+    /// </summary>
     public class Face
     {
         #region Variables and Properties

@@ -1,37 +1,37 @@
-﻿using SharpDX;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HelixToolkit.Wpf.SharpDX
 {
+    /// <summary>
+    /// The complete Mesh in the HalfEdge Data-Structure.
+    /// </summary>
     public partial class Mesh
     {
+        // Nestes Collection Classes are used because of the easy access to the Mesh's Objects.
+
         /// <summary>
-        /// 
+        /// Collection of Vertices.
         /// </summary>
         public class VertexCollection : IEnumerable<Vertex>
         {
             #region Variables and Properties
             /// <summary>
-            /// 
+            /// The Mesh.
             /// </summary>
             readonly Mesh mMesh;
             /// <summary>
-            /// 
+            /// Indexer for the Vertices.
             /// </summary>
-            /// <param name="index"></param>
-            /// <returns></returns>
+            /// <param name="index">The Vertex-Index.</param>
+            /// <returns>Vertex at the specified Index in the Collection.</returns>
             public Vertex this[int index]
             {
                 get { return mMesh.mVertices[index]; }
             }
             /// <summary>
-            /// 
+            /// The Count of Vertices in the Collection.
             /// </summary>
             public int Count
             {
@@ -42,9 +42,9 @@ namespace HelixToolkit.Wpf.SharpDX
 
             #region Constructors
             /// <summary>
-            /// 
+            /// Constructor with a Mesh.
             /// </summary>
-            /// <param name="mesh"></param>
+            /// <param name="mesh">The Mesh.</param>
             public VertexCollection(Mesh mesh)
             {
                 this.mMesh = mesh;
@@ -54,9 +54,9 @@ namespace HelixToolkit.Wpf.SharpDX
 
             #region Iterators
             /// <summary>
-            /// 
+            /// Get the Enumerator.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>The Enumerator.</returns>
             public IEnumerator<Vertex> GetEnumerator()
             {
                 foreach (var vert in mMesh.mVertices)
@@ -65,9 +65,9 @@ namespace HelixToolkit.Wpf.SharpDX
                 }
             }
             /// <summary>
-            /// 
+            /// Get the Enumerator.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>The Enumerator.</returns>
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
@@ -77,22 +77,24 @@ namespace HelixToolkit.Wpf.SharpDX
 
             #region Functions
             /// <summary>
-            /// 
+            /// Add a new Vertex to the Mesh (and Mesh's Vertex-List).
             /// </summary>
-            /// <returns></returns>
+            /// <returns>The newly created Vertex.</returns>
             public Vertex Add()
             {
+                // Add default Vertex and return it
                 Vertex vert = new Vertex();
                 mMesh.AppendToVertexList(vert);
                 return vert;
             }
             /// <summary>
-            /// 
+            /// Add a new Vertex with specified Traits to the Mesh (and Mesh's Vertex-List).
             /// </summary>
-            /// <param name="vertexTraits"></param>
-            /// <returns></returns>
+            /// <param name="vertexTraits">The Vertextraits to use.</param>
+            /// <returns>The newly created Vertex.</returns>
             public Vertex Add(VertexTraits vTraits)
             {
+                // Add Vertex with specified VertexTraits and return it
                 Vertex vert = new Vertex(vTraits);
                 mMesh.AppendToVertexList(vert);
                 return vert;
@@ -100,26 +102,26 @@ namespace HelixToolkit.Wpf.SharpDX
             #endregion Functions
         }
         /// <summary>
-        /// 
+        /// Collection of HalfEdges.
         /// </summary>
         public class HalfEdgeCollection : IEnumerable<HalfEdge>
         {
             #region Variables and Properties
             /// <summary>
-            /// 
+            /// The Mesh.
             /// </summary>
             readonly Mesh mMesh;
             /// <summary>
-            /// 
+            /// Indexer for the HalfEdges.
             /// </summary>
-            /// <param name="index"></param>
-            /// <returns></returns>
+            /// <param name="index">The HalfEdge-Index.</param>
+            /// <returns>HalfEdge at the specified Index in the Collection.</returns>
             public HalfEdge this[int index]
             {
                 get { return mMesh.mHalfEdges[index]; }
             }
             /// <summary>
-            /// 
+            /// The Count of HalfEdges in the Collection.
             /// </summary>
             public int Count
             {
@@ -130,9 +132,9 @@ namespace HelixToolkit.Wpf.SharpDX
 
             #region Constructors
             /// <summary>
-            /// 
+            /// Constructor with a Mesh.
             /// </summary>
-            /// <param name="mesh"></param>
+            /// <param name="mesh">The Mesh.</param>
             public HalfEdgeCollection(Mesh mesh)
             {
                 this.mMesh = mesh;
@@ -142,9 +144,9 @@ namespace HelixToolkit.Wpf.SharpDX
 
             #region Iterators
             /// <summary>
-            /// 
+            /// Get the Enumerator.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>The Enumerator.</returns>
             public IEnumerator<HalfEdge> GetEnumerator()
             {
                 foreach (var half in mMesh.mHalfEdges)
@@ -153,9 +155,9 @@ namespace HelixToolkit.Wpf.SharpDX
                 }
             }
             /// <summary>
-            /// 
+            /// Get the Enumerator.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>The Enumerator.</returns>
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
@@ -163,26 +165,26 @@ namespace HelixToolkit.Wpf.SharpDX
             #endregion
         }
         /// <summary>
-        /// 
+        /// Collection of Edges.
         /// </summary>
         public class EdgeCollection : IEnumerable<Edge>
         {
             #region Variables and Properties
             /// <summary>
-            /// 
+            /// The Mesh.
             /// </summary>
             readonly Mesh mMesh;
             /// <summary>
-            /// 
+            /// Indexer for the Edges.
             /// </summary>
-            /// <param name="index"></param>
-            /// <returns></returns>
+            /// <param name="index">The Edge-Index.</param>
+            /// <returns>Edge at the specified Index in the Collection.</returns>
             public Edge this[int index]
             {
                 get { return mMesh.mEdges[index]; }
             }
             /// <summary>
-            /// 
+            /// The Count of Edges in the Collection.
             /// </summary>
             public int Count
             {
@@ -193,9 +195,9 @@ namespace HelixToolkit.Wpf.SharpDX
 
             #region Constructors
             /// <summary>
-            /// 
+            /// Constructor with a Mesh.
             /// </summary>
-            /// <param name="mesh"></param>
+            /// <param name="mesh">The Mesh.</param>
             public EdgeCollection(Mesh mesh)
             {
                 this.mMesh = mesh;
@@ -205,9 +207,9 @@ namespace HelixToolkit.Wpf.SharpDX
 
             #region Iterators
             /// <summary>
-            /// 
+            /// Get the Enumerator.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>The Enumerator.</returns>
             public IEnumerator<Edge> GetEnumerator()
             {
                 foreach (var edge in mMesh.mEdges)
@@ -216,9 +218,9 @@ namespace HelixToolkit.Wpf.SharpDX
                 }
             }
             /// <summary>
-            /// 
+            /// Get the Enumerator.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>The Enumerator.</returns>
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
@@ -226,26 +228,26 @@ namespace HelixToolkit.Wpf.SharpDX
             #endregion
         }
         /// <summary>
-        /// 
+        /// Collection of Faces.
         /// </summary>
         public class FaceCollection : IEnumerable<Face>
         {
             #region Variables and Properties
             /// <summary>
-            /// 
+            /// The Mesh.
             /// </summary>
             readonly Mesh mMesh;
             /// <summary>
-            /// 
+            /// Indexer for the Faces.
             /// </summary>
-            /// <param name="index"></param>
-            /// <returns></returns>
+            /// <param name="index">The Face-Index.</param>
+            /// <returns>Face at the specified Index in the Collection.</returns>
             public Face this[int index]
             {
                 get { return mMesh.mFaces[index]; }
             }
             /// <summary>
-            /// 
+            /// The Count of Faces in the Collection.
             /// </summary>
             public int Count
             {
@@ -256,9 +258,9 @@ namespace HelixToolkit.Wpf.SharpDX
 
             #region Constructors
             /// <summary>
-            /// 
+            /// Constructor with a Mesh.
             /// </summary>
-            /// <param name="mesh"></param>
+            /// <param name="mesh">The Mesh.</param>
             public FaceCollection(Mesh mesh)
             {
                 this.mMesh = mesh;
@@ -268,9 +270,9 @@ namespace HelixToolkit.Wpf.SharpDX
 
             #region Iterators
             /// <summary>
-            /// 
+            /// Get the Enumerator.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>The Enumerator.</returns>
             public IEnumerator<Face> GetEnumerator()
             {
                 foreach (var face in mMesh.mFaces)
@@ -279,9 +281,9 @@ namespace HelixToolkit.Wpf.SharpDX
                 }
             }
             /// <summary>
-            /// 
+            /// Get the Enumerator.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>The Enumerator.</returns>
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
@@ -291,56 +293,64 @@ namespace HelixToolkit.Wpf.SharpDX
 
             #region Functions
             /// <summary>
-            /// 
+            /// Add a new Face to the Mesh (and Mesh's Face-List).
             /// </summary>
-            /// <param name="vertices"></param>
-            /// <returns></returns>
+            /// <param name="vertices">The Vertices of the Face.</param>
+            /// <returns>The newly created Face.</returns>
             public Face Add(params Vertex[] vertices)
             {
+                // Create default FaceTraits and call other Version of the Function
                 return Add(default(FaceTraits), vertices);
             }
             /// <summary>
-            /// 
+            /// Add a new Face to the Mesh (and Mesh's Face-List).
             /// </summary>
-            /// <param name="traits"></param>
-            /// <param name="vertices"></param>
-            /// <returns></returns>
+            /// <param name="traits">The FaceTraits.</param>
+            /// <param name="vertices">The Vertices of the Face.</param>
+            /// <returns>The newly created Face.</returns>
             public Face Add(FaceTraits traits, params Vertex[] vertices)
             {
+                // TODO: use Triangulator
+                // If we only want Triangles in the Mesh
                 if (mMesh.TrianglesOnly)
                 {
                     return AddTriangles(traits, vertices)[0];
                 }
+                // If all kinds of Faces are allowed
                 else
                 {
                     return CreateFace(traits, vertices);
                 }
             }
             /// <summary>
-            /// 
+            /// Add new Triangles to the Mesh (and Mesh's Face-List).
             /// </summary>
-            /// <param name="vertices"></param>
-            /// <returns></returns>
+            /// <param name="vertices">The Vertices to use.</param>
+            /// <returns>The newly created Faces.</returns>
             public Face[] AddTriangles(params Vertex[] vertices)
             {
+                // Create default FaceTraits and call other Version of the Function
                 return AddTriangles(default(FaceTraits), vertices);
             }
             /// <summary>
-            /// 
+            /// Add new Triangles to the Mesh (and Mesh's Face-List).
             /// </summary>
-            /// <param name="traits"></param>
-            /// <param name="vertices"></param>
-            /// <returns></returns>
+            /// <param name="traits">The FaceTraits.</param>
+            /// <param name="vertices">The Vertices of the Face.</param>
+            /// <returns>The newly created Faces.</returns>
             public Face[] AddTriangles(FaceTraits traits, params Vertex[] vertices)
             {
-                int n = vertices.Length;
-                if (n < 3)
+                // Check the Number of provided Vertices
+                int numVertices = vertices.Length;
+                if (numVertices < 3)
                 {
                     throw new ArgumentException("Cannot create a polygon with fewer than three vertices.");
                 }
 
-                Face[] addedFaces = new Face[n - 2];
-                for (int i = 0; i < n - 2; ++i)
+                // A Triangle-Fan is created if more than three Vertices are specified
+                // TODO: use Triangulator
+                Face[] addedFaces = new Face[numVertices - 2];
+                for (int i = 0; i < numVertices - 2; ++i)
                 {
                     addedFaces[i] = CreateFace(traits, vertices[0], vertices[i + 1], vertices[i + 2]);
                 }
@@ -348,26 +358,32 @@ namespace HelixToolkit.Wpf.SharpDX
                 return addedFaces;
             }
             /// <summary>
-            /// 
+            /// The actual Face Creation for the Mesh.
             /// </summary>
-            /// <param name="traits"></param>
-            /// <param name="vertices"></param>
-            /// <returns></returns>
+            /// <param name="traits">The FaceTraits.</param>
+            /// <param name="vertices">The Vertices of the Face to add.</param>
+            /// <returns>The newly created Face.</returns>
             private Face CreateFace(FaceTraits traits, params Vertex[] vertices)
             {
+                // Check the Number of Vertices
                 int numVerts = vertices.Length;
                 if (numVerts < 3)
                 {
                     throw new ArgumentException("Cannot create a polygon with fewer than three vertices.");
                 }
 
+                // Helper for the Vertices of the new Face
                 Edge edge;
                 Face face;
+                // Helper for the Vertices of the new Face
                 HalfEdge[] faceHalfedges = new HalfEdge[numVerts];
                 bool[] isNewEdge = new bool[numVerts];
                 var isUsedVertex = new bool[numVerts];
+
+                // For each Vertex check if we need to create new HalfEdges / Edges
                 for (int i = 0; i < numVerts; ++i)
                 {
+                    // The next Vertex of the Face
                     int j = (i + 1) % numVerts;
                     if (vertices[i] == null)
                     {
@@ -378,6 +394,7 @@ namespace HelixToolkit.Wpf.SharpDX
                         throw new ArgumentException("Can't add an edge to a vertex on the interior of a mesh.");
                     }
 
+                    // Find the connecting HalfEdge between current and next Vertex if it exists
                     faceHalfedges[i] = vertices[i].FindHalfedgeTo(vertices[j]);
                     isNewEdge[i] = (faceHalfedges[i] == null);
                     isUsedVertex[i] = (vertices[i].HalfEdge != null);
@@ -388,44 +405,58 @@ namespace HelixToolkit.Wpf.SharpDX
                     }
                 }
 
-                // Create a new Face
+                // Create a new Face and add it to the Faces-List of the Mesh
                 face = new Face(traits);
                 mMesh.AppendToFaceList(face);
 
+                // For each Vertex add new HalfEdges / Edges if needed
                 for (int i = 0; i < numVerts; ++i)
                 {
+                    // The next Vertex
                     int j = (i + 1) % numVerts;
+
+                    // If we need to create a new HalfEdge / Edge for the Vertex
                     if (isNewEdge[i])
                     {
+                        // Create a new Edge and add it to the Edges-List of the Mesh
                         edge = new Edge();
                         mMesh.AppendToEdgeList(edge);
 
+                        // Create a new Halfedge and add it to the Edges-List of the Mesh
                         faceHalfedges[i] = new HalfEdge();
                         mMesh.AppendToHalfedgeList(faceHalfedges[i]);
 
+                        // Create a new opposite Halfedge and add it to the Edges-List of the Mesh
                         faceHalfedges[i].Opposite = new HalfEdge();
                         mMesh.AppendToHalfedgeList(faceHalfedges[i].Opposite);
 
+                        // Also set the opposite's Opposite to the first new created HalfEdge
                         faceHalfedges[i].Opposite.Opposite = faceHalfedges[i];
-
+                        
+                        // ...and the first Halfedge of the new Edge
                         edge.HalfEdge_0 = faceHalfedges[i];
 
+                        // Set the Halfedge's edge to the new Edge
                         faceHalfedges[i].Edge = edge;
                         faceHalfedges[i].Opposite.Edge = edge;
 
+                        // Set the To-Vertex for the new HalfEdges to be the next Vertex
                         faceHalfedges[i].To = vertices[j];
                         faceHalfedges[i].Opposite.To = vertices[i];
 
+                        // If not set Previously set the Vertex' HalfEdge
                         if (vertices[i].HalfEdge == null)
                         {
                             vertices[i].HalfEdge = faceHalfedges[i];
                         }
                     }
+                    // Error checking
                     if (faceHalfedges[i].Face != null)
                     {
                         throw new ArgumentException("An inner halfedge already has a face assigned to it.");
                     }
 
+                    // Set the Face of the Halfedge to be the new Face
                     faceHalfedges[i].Face = face;
                 }
 
