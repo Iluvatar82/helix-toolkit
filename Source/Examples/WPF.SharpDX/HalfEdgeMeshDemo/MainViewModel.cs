@@ -47,6 +47,14 @@ namespace HalfEdgeMeshDemo
         /// </summary>
         public Vector3 DirectionalLightDirection { get; private set; }
         /// <summary>
+        /// Direction of the directional Light2
+        /// </summary>
+        public Vector3 DirectionalLight2Direction { get; private set; }
+        /// <summary>
+        /// Direction of the directional Light3
+        /// </summary>
+        public Vector3 DirectionalLight3Direction { get; private set; }
+        /// <summary>
         /// Color of the directional Light
         /// </summary>
         public Color4 DirectionalLightColor { get; private set; }
@@ -76,17 +84,7 @@ namespace HalfEdgeMeshDemo
         /// <summary>
         /// Transform of the Polygon
         /// </summary>
-        public Transform3D ModelTransform { get; private set; }
-        /// <summary>
-        /// Collection of Materials to chose from
-        /// </summary>
-        public PhongMaterialCollection Materials
-        {
-            get
-            {
-                return HelixToolkit.Wpf.SharpDX.PhongMaterials.Materials;
-            }
-        }
+        public Transform3D ModelTransform { get; set; }
         /// <summary>
         /// Draw the Triangles or not
         /// </summary>
@@ -104,37 +102,6 @@ namespace HalfEdgeMeshDemo
                 mShowBoundaries = value;
                 OnPropertyChanged("ShowTriangleLines");
             }
-        }
-        /// <summary>
-        /// The Point Count
-        /// </summary>
-        private int mPointCount;
-        /// <summary>
-        /// Access to the Point Count (restricted to the Range 3 - 10.000)
-        /// </summary>
-        public int PointCount
-        {
-            get
-            {
-                return mPointCount;
-            }
-            set
-            {
-                if (value < 3)
-                    mPointCount = 3;
-                else if (value > 10000)
-                    mPointCount = 10000;
-                else
-                    mPointCount = value;
-                OnPropertyChanged("PointCountText");
-            }
-        }
-        /// <summary>
-        /// Text representing the current PointCount
-        /// </summary>
-        public string PointCountText
-        {
-            get { return "Number of Points: " + this.mPointCount; }
         }
         /// <summary>
         /// The Geometry for the Triangle Lines
@@ -163,20 +130,19 @@ namespace HalfEdgeMeshDemo
             this.BoundaryThickness = 1;
             this.ShowBoundaries = true;
 
-            // Count Setup
-            this.PointCount = 1000;
-
             // Lighting Setup
-            this.AmbientLightColor = new Color4(.1f, .1f, .1f, 1.0f);
-            this.DirectionalLightColor = Color.White;
-            this.DirectionalLightDirection = new Vector3(0, -1, 0);
-            
+            this.AmbientLightColor = new Color4(.2f, .2f, .2f, 1.0f);
+            this.DirectionalLightColor = new Color4(.6f, .6f, .6f, 1);
+            this.DirectionalLightDirection = new Vector3(-1, -1, -1);
+            this.DirectionalLight2Direction = new Vector3(-1, 1, 1);
+            this.DirectionalLight3Direction = new Vector3(1, -1, 1);
+
             // Model Transformations
             this.ModelTransform = new TranslateTransform3D(0, 0, 0);
             
             // Model Materials and Colors
             this.Material = PhongMaterials.PolishedBronze;
-            this.BoundaryColor = SharpDX.Color.Black;
+            this.BoundaryColor = SharpDX.Color.Red;
 
             // Grid Setup
             this.Grid = LineBuilder.GenerateGrid(Vector3.UnitY, -5, 5, 0, 10);

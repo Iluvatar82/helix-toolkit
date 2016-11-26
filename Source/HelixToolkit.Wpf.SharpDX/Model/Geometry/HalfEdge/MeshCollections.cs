@@ -422,29 +422,27 @@ namespace HelixToolkit.Wpf.SharpDX
                         edge = new Edge();
                         mMesh.AppendToEdgeList(edge);
 
-                        // Create a new Halfedge and add it to the Edges-List of the Mesh
+                        // Create a new HalfEdge and add it to the HalfEdges-List of the Mesh
                         faceHalfedges[i] = new HalfEdge();
                         mMesh.AppendToHalfedgeList(faceHalfedges[i]);
 
-                        // Create a new opposite Halfedge and add it to the Edges-List of the Mesh
+                        // Create a new opposite HalfEdge and connect to inner HalfEdge
                         faceHalfedges[i].Opposite = new HalfEdge();
                         mMesh.AppendToHalfedgeList(faceHalfedges[i].Opposite);
-
-                        // Also set the opposite's Opposite to the first new created HalfEdge
                         faceHalfedges[i].Opposite.Opposite = faceHalfedges[i];
                         
-                        // ...and the first Halfedge of the new Edge
+                        // Connect HalfEdge to new Edge
                         edge.HalfEdge_0 = faceHalfedges[i];
 
-                        // Set the Halfedge's edge to the new Edge
+                        // Connect Edge to new HalfEdges
                         faceHalfedges[i].Edge = edge;
                         faceHalfedges[i].Opposite.Edge = edge;
 
-                        // Set the To-Vertex for the new HalfEdges to be the next Vertex
+                        // Connect Vertices to HalfEdges
                         faceHalfedges[i].To = vertices[j];
                         faceHalfedges[i].Opposite.To = vertices[i];
 
-                        // If not set Previously set the Vertex' HalfEdge
+                        // Connect "outgoing" HalfEdge to Vertex if not previously done
                         if (vertices[i].HalfEdge == null)
                         {
                             vertices[i].HalfEdge = faceHalfedges[i];
@@ -456,17 +454,22 @@ namespace HelixToolkit.Wpf.SharpDX
                         throw new ArgumentException("An inner halfedge already has a face assigned to it.");
                     }
 
-                    // Set the Face of the Halfedge to be the new Face
+                    // Connect new Face to HalfEdge
                     faceHalfedges[i].Face = face;
                 }
 
+                // Connect next / previous HalfEdges
                 for (int i = 0; i < numVerts; ++i)
                 {
+                    // The next Vertex
                     int j = (i + 1) % numVerts;
+
+                    // If both Edges are new and Vertex has Faces connected already
                     if (isNewEdge[i] && isNewEdge[j] && isUsedVertex[j])
                     {
                         HalfEdge closeHalfedge = null;
 
+                        // Find the first closing HalfEdge
                         foreach (var half in vertices[j].HalfEdges)
                         {
                             if (half.Face == null)
@@ -476,32 +479,41 @@ namespace HelixToolkit.Wpf.SharpDX
                             }
                         }
 
+                        // Get previous HalfEdge
                         var openHalfedge = closeHalfedge.Previous;
 
+                        // Link new outer HalfEdges into this Opening
                         faceHalfedges[i].Opposite.Previous = openHalfedge;
                         openHalfedge.Next = faceHalfedges[i].Opposite;
                         faceHalfedges[j].Opposite.Next = closeHalfedge;
                         closeHalfedge.Previous = faceHalfedges[j].Opposite;
                     }
+                    // Both Edges are new
                     else if (isNewEdge[i] && isNewEdge[j])
                     {
+
                         faceHalfedges[i].Opposite.Previous = faceHalfedges[j].Opposite;
                         faceHalfedges[j].Opposite.Next = faceHalfedges[i].Opposite;
                     }
+                    // Current Edge is new, next Edge is not new
                     else if (isNewEdge[i] && !isNewEdge[j])
                     {
                         faceHalfedges[i].Opposite.Previous = faceHalfedges[j].Previous;
                         faceHalfedges[j].Previous.Next = faceHalfedges[i].Opposite;
                     }
+                    // Next Edge is new, current Edge is not new
                     else if (!isNewEdge[i] && isNewEdge[j])
                     {
                         faceHalfedges[i].Next.Previous = faceHalfedges[j].Opposite;
                         faceHalfedges[j].Opposite.Next = faceHalfedges[i].Next;
                     }
+                    // Both, the current and next Edge aready exist, but the Faces
+                    // need to be re-connected before adding new Edges
                     else if (!isNewEdge[i] && !isNewEdge[j] && faceHalfedges[i].Next != faceHalfedges[j])
                     {
                         var closeHalfedge = faceHalfedges[i].Opposite;
 
+                        // Find the closing HalfEdge of the opening Opposite the opening HalfEdge i is on
                         do
                         {
                             closeHalfedge = closeHalfedge.Previous.Opposite;
@@ -515,17 +527,21 @@ namespace HelixToolkit.Wpf.SharpDX
 
                         var openHalfedge = closeHalfedge.Previous;
 
+                        // Remove Group of Faces between two Openings, close up Gap to form one Opening
                         openHalfedge.Next = faceHalfedges[i].Next;
                         faceHalfedges[i].Next.Previous = openHalfedge;
 
+                        // Insert Group of Faces into Target Opening
                         faceHalfedges[j].Previous.Next = closeHalfedge;
                         closeHalfedge.Previous = faceHalfedges[j].Previous;
                     }
 
+                    // Set inner HalfEdges
                     faceHalfedges[i].Next = faceHalfedges[j];
                     faceHalfedges[j].Previous = faceHalfedges[i];
                 }
 
+                // Set Face's HalfEdge at last
                 face.HalfEdge = faceHalfedges[0];
 
                 return face;

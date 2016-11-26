@@ -7,16 +7,11 @@
     {
         #region Variables and Properties
         /// <summary>
-        /// The Start-Vertex.
-        /// </summary>
-        private Vertex mFrom;
-        /// <summary>
         /// Accessor for the Start-Vertex.
         /// </summary>
         public Vertex From
         {
-            get { return mFrom; }
-            set { mFrom = value; }
+            get { return Opposite.To; }
         }
         /// <summary>
         /// The End-Vertex.
@@ -127,7 +122,6 @@
         public HalfEdge(Vertex to, Vertex from)
         {
             this.mTo = to;
-            this.mFrom = from;
         }
         #endregion Constructors
     }

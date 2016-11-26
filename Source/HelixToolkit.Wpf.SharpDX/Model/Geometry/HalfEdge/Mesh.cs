@@ -168,6 +168,68 @@ namespace HelixToolkit.Wpf.SharpDX
             vertex.Mesh = this;
             mVertices.Add(vertex);
         }
+        /// <summary>
+        /// List of Boundaries as represented by their Vertex Index.
+        /// </summary>
+        /// <returns>The List of Boundaries.</returns>
+        public List<List<int>> GetBoundaryIndices()
+        {
+            // The List
+            var indices = new List<List<int>>();
+            var processedEdges = new HashSet<Edge>();
+            
+            // Check all Edges
+            foreach (var edge in mEdges)
+            {
+                // If the Edge is not on the Boundary or previously handles, skip it
+                if (!edge.OnBoundary || processedEdges.Contains(edge))
+                    continue;
+                // Get the Boundary HalfEdge
+                var halfEdgeBoundary = edge.HalfEdge_0.OnBoundary ? edge.HalfEdge_0 : edge.HalfEdge_1;
+                var firstHalf = halfEdgeBoundary;
+                var boundaryList = new List<int>();
+                // Loop through all HalfEdges and add the Indices and Edges
+                do
+                {
+                    boundaryList.Add(halfEdgeBoundary.From.Index);
+                    processedEdges.Add(halfEdgeBoundary.Edge);
+                    halfEdgeBoundary = halfEdgeBoundary.Next;
+                }
+                while (halfEdgeBoundary != firstHalf);
+                
+                // Add the found Boundary Indices
+                indices.Add(boundaryList);
+            }
+
+            return indices;
+        }
+        /// <summary>
+        /// Create a LineGeometry3D Object from all Boundary Edges.
+        /// </summary>
+        /// <returns>The LineGeometry3D</returns>
+        public LineGeometry3D GetBoundaryGeometry()
+        {
+            // Use all Boundary Indices to get the Boundary Lines
+            var boundaryIndices = GetBoundaryIndices();
+            var lineIndices = new List<int>();
+            var linePositions = new List<Vector3>();
+            foreach (var boundary in boundaryIndices)
+            {
+                var start = linePositions.Count;
+                for (int i = 0; i < boundary.Count; i++)
+                {
+                    var j = (i + 1) % boundary.Count;
+                    lineIndices.Add(i + start);
+                    lineIndices.Add(j + start);
+                    linePositions.Add(Vertices[boundary[i]].Traits.Position);
+                }
+            }
+            return new LineGeometry3D()
+            {
+                Positions = new Core.Vector3Collection(linePositions),
+                Indices = new Core.IntCollection(lineIndices)
+            };
+        }
         #endregion Functions
     }
 }

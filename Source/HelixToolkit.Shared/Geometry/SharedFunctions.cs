@@ -25,11 +25,11 @@ namespace HelixToolkit.Wpf
     internal static class SharedFunctions
     {
         /// <summary>
-        /// 
+        /// Cross Product of two Vectors
         /// </summary>
-        /// <param name="first"></param>
-        /// <param name="second"></param>
-        /// <returns></returns>
+        /// <param name="first">First Vector</param>
+        /// <param name="second">Second Vector</param>
+        /// <returns>Cross Product of the two Vectors</returns>
         public static Vector3D CrossProduct(Vector3D first, Vector3D second)
         {
 #if SHARPDX
@@ -39,11 +39,11 @@ namespace HelixToolkit.Wpf
 #endif
         }
         /// <summary>
-        /// 
+        /// Dot Product of two Vectors
         /// </summary>
-        /// <param name="first"></param>
-        /// <param name="second"></param>
-        /// <returns></returns>
+        /// <param name="first">First Vector</param>
+        /// <param name="second">Second Vector</param>
+        /// <returns>Dot Product of the two Vectors</returns>
         public static DoubleOrSingle DotProduct(Vector3D first, Vector3D second)
         {
             return first.X * second.X + first.Y * second.Y + first.Z * second.Z;

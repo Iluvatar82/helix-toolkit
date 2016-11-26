@@ -36,28 +36,32 @@ namespace HalfEdgeMeshDemo
             mViewModel = new MainViewModel();
             this.DataContext = mViewModel;
 
+            mViewModel.ModelTransform = new TranslateTransform3D(0, 0, 5);
             createObject();
         }
-
+        /// <summary>
+        /// Create the HalfEdge Object and display it including all Boundary Edges.
+        /// </summary>
         private void createObject()
         {
+            // Create the Objects
             var mb = new MeshBuilder();
-            mb.AddCube();
+            mb.AddClosedCube();
+            mb.AddClosedCube(new SharpDX.Vector3(2, 0, 0), SharpDX.Vector3.UnitZ, SharpDX.Vector3.UnitY,
+                1.75f, BoxFaces.All & ~BoxFaces.Front & ~BoxFaces.Back);
+            mb.AddClosedCube(new SharpDX.Vector3(-2, 0, 0), SharpDX.Vector3.UnitZ, SharpDX.Vector3.UnitY,
+                1.75f, BoxFaces.All & ~BoxFaces.Front & ~BoxFaces.Bottom & ~BoxFaces.Right);
+            mb.AddTorus(2, .5, 64, 64);
+            mb.AddPyramid(new SharpDX.Vector3(0, 0, -2), new SharpDX.Vector3(0, 0, -1),
+                new SharpDX.Vector3(0, 1, 0), 1, 2);
+
             baseMesh.Geometry = mb.ToMesh();
             baseMesh.Material = mViewModel.Material;
-            baseMesh.Transform = new TranslateTransform3D(0, 0, 5);
 
+            // Use the Object to create the HalfEdge Mesh
             var heBaseMesh = new Mesh((HelixToolkit.Wpf.SharpDX.MeshGeometry3D)baseMesh.Geometry);
-            /*var boundaryVertex = heBaseMesh.Vertices.FirstOrDefault(v => v.OnBoundary);
-            if (boundaryVertex != default(Vertex))
-            {
-
-            }
-            baseMeshBoundaries.Geometry = new LineGeometry3D()
-            {
-                Positions = ,
-                Indices = 
-            };*/
+            // Set the Geometry of the BoundaryLines
+            baseMeshBoundaries.Geometry = heBaseMesh.GetBoundaryGeometry();
         }
     }
 }
