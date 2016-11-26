@@ -1025,7 +1025,7 @@ namespace HelixToolkit.Wpf
         /// <param name="front">The Front-Vector.</param>
         /// <param name="size">The Size of the Cube.</param>
         /// <param name="faces">The CubeFaces to generate.</param>
-        public void AddClosedCube(Vector3D center, Vector3D up, Vector3D front, double size = 1.0, BoxFaces faces = BoxFaces.All)
+        public void AddClosedCube(Point3D center, Vector3D up, Vector3D front, double size = 1.0, BoxFaces faces = BoxFaces.All)
         {
             // Make sure the Vectors are normalized and create a caresian Coordinate-System
             up.Normalize();
@@ -1034,25 +1034,14 @@ namespace HelixToolkit.Wpf
             front = SharedFunctions.CrossProduct(up, right);
             var startCount = this.positions.Count;
             // Add Points
-#if SHARPDX
-            this.positions.Add(center - up * 0.5f - right * 0.5f - front * 0.5f);
-            this.positions.Add(center - up * 0.5f - right * 0.5f + front * 0.5f);
-            this.positions.Add(center - up * 0.5f + right * 0.5f + front * 0.5f);
-            this.positions.Add(center - up * 0.5f + right * 0.5f - front * 0.5f);
-            this.positions.Add(center + up * 0.5f - right * 0.5f - front * 0.5f);
-            this.positions.Add(center + up * 0.5f - right * 0.5f + front * 0.5f);
-            this.positions.Add(center + up * 0.5f + right * 0.5f + front * 0.5f);
-            this.positions.Add(center + up * 0.5f + right * 0.5f - front * 0.5f);
-#else
-            this.positions.Add(SharedFunctions.ToPoint3D(center - up * 0.5f - right * 0.5f - front * 0.5f));
-            this.positions.Add(SharedFunctions.ToPoint3D(center - up * 0.5f - right * 0.5f + front * 0.5f));
-            this.positions.Add(SharedFunctions.ToPoint3D(center - up * 0.5f + right * 0.5f + front * 0.5f));
-            this.positions.Add(SharedFunctions.ToPoint3D(center - up * 0.5f + right * 0.5f - front * 0.5f));
-            this.positions.Add(SharedFunctions.ToPoint3D(center + up * 0.5f - right * 0.5f - front * 0.5f));
-            this.positions.Add(SharedFunctions.ToPoint3D(center + up * 0.5f - right * 0.5f + front * 0.5f));
-            this.positions.Add(SharedFunctions.ToPoint3D(center + up * 0.5f + right * 0.5f + front * 0.5f));
-            this.positions.Add(SharedFunctions.ToPoint3D(center + up * 0.5f + right * 0.5f - front * 0.5f));
-#endif
+            this.positions.Add(Point3D.Add(center, -up * 0.5f - right * 0.5f - front * 0.5f));
+            this.positions.Add(Point3D.Add(center, -up * 0.5f - right * 0.5f + front * 0.5f));
+            this.positions.Add(Point3D.Add(center, -up * 0.5f + right * 0.5f + front * 0.5f));
+            this.positions.Add(Point3D.Add(center, -up * 0.5f + right * 0.5f - front * 0.5f));
+            this.positions.Add(Point3D.Add(center, up * 0.5f - right * 0.5f - front * 0.5f));
+            this.positions.Add(Point3D.Add(center, up * 0.5f - right * 0.5f + front * 0.5f));
+            this.positions.Add(Point3D.Add(center, up * 0.5f + right * 0.5f + front * 0.5f));
+            this.positions.Add(Point3D.Add(center, up * 0.5f + right * 0.5f - front * 0.5f));
 
             // Add Normals
             if (this.normals != null)
@@ -1163,7 +1152,7 @@ namespace HelixToolkit.Wpf
         /// </summary>
         public void AddClosedCube()
         {
-            AddClosedCube(new Vector3D(), new Vector3D(0, 0, 1), new Vector3D(0, 1, 0), 1, BoxFaces.All);
+            AddClosedCube(new Point3D(), new Vector3D(0, 0, 1), new Vector3D(0, 1, 0), 1, BoxFaces.All);
         }
         /// <summary>
         /// Adds a cylinder to the mesh.
@@ -3966,7 +3955,7 @@ namespace HelixToolkit.Wpf
 #endregion Add Geometry
 
 
-#region Helper Functions
+        #region Helper Functions
         /// <summary>
         /// Appends the specified mesh.
         /// </summary>
@@ -4548,10 +4537,10 @@ namespace HelixToolkit.Wpf
                 this.Subdivide4();
             }
         }
-#endregion Helper Functions
+        #endregion Helper Functions
 
 
-#region Exporter Functions
+        #region Exporter Functions
 #if SHARPDX
         /// <summary>
         /// Generate a MeshGeometry3D from the generated Data.
@@ -4729,7 +4718,7 @@ namespace HelixToolkit.Wpf
             return mg;
         }
 #endif
-#endregion Exporter Functions
+        #endregion Exporter Functions
     }
 #pragma warning restore 0436
 }

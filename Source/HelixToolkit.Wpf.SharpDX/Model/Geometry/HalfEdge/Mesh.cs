@@ -1,6 +1,7 @@
 ﻿using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HelixToolkit.Wpf.SharpDX
 {
@@ -236,6 +237,65 @@ namespace HelixToolkit.Wpf.SharpDX
                 Positions = new Core.Vector3Collection(linePositions),
                 Indices = new Core.IntCollection(lineIndices)
             };
+        }
+        /// <summary>
+        /// Try to close the Mesh by merging all close Boundary Points together.
+        /// </summary>
+        /// <param name="eps">The allowed maximum Distance to merge Vertices of the Boundary.</param>
+        public void TryClose(float eps = 0.0001f)
+        {
+            /*var boundaryPoints = this.mVertices.Where(v => v.OnBoundary).ToList();
+            var mapping = new Dictionary<int, int>();
+            for (int i = 0; i < boundaryPoints.Count; i++)
+            {
+                for (int j = i + 1; j < boundaryPoints.Count; j++)
+                {
+                    if (mapping.ContainsKey(j))
+                    {
+                        continue;
+                    }
+
+                    var l2 = SharedFunctions.LengthSquared(boundaryPoints[i].Traits.Position - boundaryPoints[j].Traits.Position);
+                    if (l2 < eps)
+                    {
+                        mapping.Add(j, i);
+                    }
+                }
+            }*/
+
+
+
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="faceIndex"></param>
+        public void RemoveFace(int faceIndex)
+        {
+            this.Faces.Remove(this.mFaces[faceIndex]);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vertexIndex"></param>
+        public void RemoveVertex(int vertexIndex)
+        {
+            this.Faces.Remove(this.mVertices[vertexIndex].Faces.ToArray());
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="edgeIndex"></param>
+        public void RemoveEdge(int edgeIndex)
+        {
+            if (!this.mEdges[edgeIndex].OnBoundary)
+            {
+                this.Faces.Remove(this.mEdges[edgeIndex].Face_0, this.mEdges[edgeIndex].Face_1);
+            }
+            else
+            {
+                this.Faces.Remove(this.mEdges[edgeIndex].HalfEdge_0.OnBoundary ? this.mEdges[edgeIndex].Face_1 : this.mEdges[edgeIndex].Face_0);
+            }
         }
         #endregion Functions
     }

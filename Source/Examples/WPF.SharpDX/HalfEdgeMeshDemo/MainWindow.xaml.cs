@@ -60,6 +60,7 @@ namespace HalfEdgeMeshDemo
 
             // Use the Object to create the HalfEdge Mesh
             var heBaseMesh = new Mesh((HelixToolkit.Wpf.SharpDX.MeshGeometry3D)baseMesh.Geometry);
+            //heBaseMesh.TryClose();
             // Set the Geometry of the BoundaryLines
             baseMeshBoundaries.Geometry = heBaseMesh.GetBoundaryGeometry();
         }

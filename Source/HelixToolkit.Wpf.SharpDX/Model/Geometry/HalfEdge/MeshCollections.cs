@@ -556,6 +556,16 @@ namespace HelixToolkit.Wpf.SharpDX
 
                 return face;
             }
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="faces"></param>
+            /// <returns></returns>
+            public bool Remove(params Face[] faces)
+            {
+
+                return true;
+            } 
         }
         #endregion Functions
     }
