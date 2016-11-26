@@ -23,6 +23,10 @@ namespace PolygonTriangulationDemo
         /// </summary>
         public double LineThickness { get; set; }
         /// <summary>
+        /// Thickness of the Lines of the Boundaries
+        /// </summary>
+        public double BoundaryLineThickness { get; set; }
+        /// <summary>
         /// Thickness of the Lines of the Triangulated Polygon
         /// </summary>
         public double TriangulationThickness { get; set; }
@@ -38,6 +42,10 @@ namespace PolygonTriangulationDemo
         /// Color of the Triangle Lines
         /// </summary>
         public SharpDX.Color TriangulationColor { get; private set; }
+        /// <summary>
+        /// Color of the Boundary Lines
+        /// </summary>
+        public SharpDX.Color BoundaryColor { get; private set; }
         /// <summary>
         /// Transform of the Grid
         /// </summary>
@@ -110,6 +118,25 @@ namespace PolygonTriangulationDemo
             }
         }
         /// <summary>
+        /// Draw the Boundaries or not
+        /// </summary>
+        private Boolean mShowBoundaries;
+        /// <summary>
+        /// Accessor to the Boolean
+        /// </summary>
+        public Boolean ShowBoundaries
+        {
+            get
+            {
+                return mShowBoundaries;
+            }
+            set
+            {
+                mShowBoundaries = value;
+                OnPropertyChanged("ShowBoundaries");
+            }
+        }
+        /// <summary>
         /// The Point Count
         /// </summary>
         private int mPointCount;
@@ -144,6 +171,10 @@ namespace PolygonTriangulationDemo
         /// The Geometry for the Triangle Lines
         /// </summary>
         public HelixToolkit.Wpf.SharpDX.LineGeometry3D LineGeometry;
+        /// <summary>
+        /// The Geometry for the Boundary Lines
+        /// </summary>
+        public HelixToolkit.Wpf.SharpDX.LineGeometry3D BoundaryGeometry;
 
         /// <summary>
         /// Constructor of the MainViewModel
@@ -165,7 +196,9 @@ namespace PolygonTriangulationDemo
             // Lines Setup
             this.LineThickness = 1;
             this.TriangulationThickness = .5;
+            this.BoundaryLineThickness = 1;
             this.ShowTriangleLines = true;
+            this.ShowBoundaries = true;
 
             // Count Setup
             this.PointCount = 1000;
@@ -182,6 +215,7 @@ namespace PolygonTriangulationDemo
             // Model Materials and Colors
             this.Material = PhongMaterials.PolishedBronze;
             this.TriangulationColor = SharpDX.Color.Black;
+            this.BoundaryColor = SharpDX.Color.Red;
 
             // Grid Setup
             this.Grid = LineBuilder.GenerateGrid(Vector3.UnitY, -5, 5, 0, 10);

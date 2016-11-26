@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HelixToolkit.Wpf.SharpDX
 {
@@ -310,7 +311,6 @@ namespace HelixToolkit.Wpf.SharpDX
             /// <returns>The newly created Face.</returns>
             public Face Add(FaceTraits traits, params Vertex[] vertices)
             {
-                // TODO: use Triangulator
                 // If we only want Triangles in the Mesh
                 if (mMesh.TrianglesOnly)
                 {
@@ -347,12 +347,22 @@ namespace HelixToolkit.Wpf.SharpDX
                     throw new ArgumentException("Cannot create a polygon with fewer than three vertices.");
                 }
 
-                // A Triangle-Fan is created if more than three Vertices are specified
-                // TODO: use Triangulator
+                // Triangulate if more than three Vertices are specified
                 Face[] addedFaces = new Face[numVertices - 2];
-                for (int i = 0; i < numVertices - 2; ++i)
+                if (numVertices > 3)
                 {
-                    addedFaces[i] = CreateFace(traits, vertices[0], vertices[i + 1], vertices[i + 2]);
+                    var poly3D = new Polygon3D(vertices.Select(v => v.Traits.Position).ToList());
+                    var poly2D = poly3D.Flatten();
+                    var indices = SweepLinePolygonTriangulator.Triangulate(poly2D.Points);
+                    for (int i = 0; i < numVertices - 2; i++)
+                    {
+                        addedFaces[i] = CreateFace(traits, vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]);
+                    }
+                }
+                // Use the Vertices if there are exactly three Vertices present
+                else
+                {
+                    addedFaces[0] = CreateFace(traits, vertices[0], vertices[1], vertices[2]);
                 }
 
                 return addedFaces;

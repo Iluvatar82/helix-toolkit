@@ -68,6 +68,7 @@ namespace HelixToolkit.Wpf.SharpDX
             this.HalfEdges = new HalfEdgeCollection(this);
             this.Edges = new EdgeCollection(this);
             this.Faces = new FaceCollection(this);
+            this.TrianglesOnly = true;
         }
         /// <summary>
         /// Constructor from a MeshGeometry3D.
@@ -128,7 +129,13 @@ namespace HelixToolkit.Wpf.SharpDX
                     this.Vertices[startVertex + triangleIndices[i+1]],
                     this.Vertices[startVertex + triangleIndices[i+2]],
                 };
-                this.Faces.Add(tri);
+                // Try to add the new Triangle (TODO: catch fix)
+                try
+                {
+                    this.Faces.Add(tri);
+                }
+                catch(Exception e)
+                { }
             }
         }
         /// <summary>
