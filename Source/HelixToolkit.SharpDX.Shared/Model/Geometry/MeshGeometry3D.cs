@@ -9,9 +9,8 @@ namespace HelixToolkit.Wpf.SharpDX
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
     using global::SharpDX;
-
+    using System.Diagnostics;
     using HelixToolkit.Wpf.SharpDX.Core;
 
 #if !NETFX_CORE
@@ -19,10 +18,31 @@ namespace HelixToolkit.Wpf.SharpDX
 #endif
     public class MeshGeometry3D : Geometry3D
     {
+        /// <summary>
+        /// Does not raise property changed event
+        /// </summary>
         public Vector3Collection Normals { get; set; }
-        public Vector2Collection TextureCoordinates { get; set; }
 
+        private Vector2Collection textureCoordinates = null;
+        public Vector2Collection TextureCoordinates
+        {
+            get
+            {
+                return textureCoordinates;
+            }
+            set
+            {
+                Set<Vector2Collection>(ref textureCoordinates, value);
+            }
+        }
+        /// <summary>
+        /// Does not raise property changed event
+        /// </summary>
         public Vector3Collection Tangents { get; set; }
+
+        /// <summary>
+        /// Does not raise property changed event
+        /// </summary>
         public Vector3Collection BiTangents { get; set; }
 
         public IEnumerable<Geometry3D.Triangle> Triangles
@@ -36,7 +56,11 @@ namespace HelixToolkit.Wpf.SharpDX
             }
         }
 
-        public IntCollection TriangleIndices { get { return Indices; } set { Indices = new IntCollection(value); } }
+        public IntCollection TriangleIndices
+        {
+            get { return Indices; }
+            set { Indices = new IntCollection(value); }
+        }
 
         public static MeshGeometry3D Merge(params MeshGeometry3D[] meshes)
         {
@@ -104,5 +128,12 @@ namespace HelixToolkit.Wpf.SharpDX
 
             return mesh;
         }
+
+#if !NETFX_CORE
+        protected override IOctree CreateOctree(OctreeBuildParameter parameter)
+        {
+            return new MeshGeometryOctree(this.Positions, this.Indices, parameter);
+        }
+#endif
     }
 }

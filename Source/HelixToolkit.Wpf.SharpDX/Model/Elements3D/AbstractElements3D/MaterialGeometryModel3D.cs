@@ -19,27 +19,24 @@ namespace HelixToolkit.Wpf.SharpDX
 
     using HelixToolkit.Wpf.SharpDX.Utilities;
 
-    public abstract class MaterialGeometryModel3D : GeometryModel3D
+    public abstract class MaterialGeometryModel3D : InstanceGeometryModel3D
     {
         protected InputLayout vertexLayout;
-        protected Buffer vertexBuffer;
-        protected Buffer indexBuffer;
-        protected Buffer instanceBuffer;
-        protected EffectTechnique effectTechnique;        
+        protected EffectTechnique effectTechnique;
         protected EffectTransformVariables effectTransforms;
-        protected EffectMaterialVariables effectMaterial;        
-        protected PhongMaterial phongMaterial;
-        protected ShaderResourceView texDiffuseMapView;
-        protected ShaderResourceView texNormalMapView;
-        protected ShaderResourceView texDisplacementMapView;
-        protected EffectScalarVariable bHasInstances;
-        protected Matrix[] instanceArray;
-        protected bool isChanged = true;
-        protected bool hasInstances = false;
-        protected bool hasShadowMap = false;
+        protected EffectMaterialVariables effectMaterial;
+        /// <summary>
+        /// For subclass override
+        /// </summary>
+        public abstract IBufferProxy VertexBuffer { get; }
+        /// <summary>
+        /// For subclass override
+        /// </summary>
+        public abstract IBufferProxy IndexBuffer { get; }
 
+        protected bool hasShadowMap = false;
         public MaterialGeometryModel3D()
-        {            
+        {
         }
 
         /// <summary>
@@ -55,7 +52,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// 
         /// </summary>
         public static readonly DependencyProperty RenderDiffuseMapProperty =
-            DependencyProperty.Register("RenderDiffuseMap", typeof(bool), typeof(MaterialGeometryModel3D), new UIPropertyMetadata(true));
+            DependencyProperty.Register("RenderDiffuseMap", typeof(bool), typeof(MaterialGeometryModel3D), new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender));
 
         /// <summary>
         /// 
@@ -69,8 +66,22 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>
+        public static readonly DependencyProperty RenderAlphaDiffuseMapProperty =
+            DependencyProperty.Register("RenderAlphaDiffuseMap", typeof(bool), typeof(MaterialGeometryModel3D), new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool RenderAlphaDiffuseMap
+        {
+            get { return (bool)this.GetValue(RenderAlphaDiffuseMapProperty); }
+            set { this.SetValue(RenderAlphaDiffuseMapProperty, value); }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
         public static readonly DependencyProperty RenderNormalMapProperty =
-            DependencyProperty.Register("RenderNormalMap", typeof(bool), typeof(MaterialGeometryModel3D), new UIPropertyMetadata(false));
+            DependencyProperty.Register("RenderNormalMap", typeof(bool), typeof(MaterialGeometryModel3D), new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender));
 
         /// <summary>
         /// 
@@ -85,7 +96,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// 
         /// </summary>
         public static readonly DependencyProperty RenderDisplacementMapProperty =
-            DependencyProperty.Register("RenderDisplacementMap", typeof(bool), typeof(MaterialGeometryModel3D), new UIPropertyMetadata(false));
+            DependencyProperty.Register("RenderDisplacementMap", typeof(bool), typeof(MaterialGeometryModel3D), new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.AffectsRender));
 
         /// <summary>
         /// 
@@ -100,7 +111,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// 
         /// </summary>
         public static readonly DependencyProperty MaterialProperty =
-            DependencyProperty.Register("Material", typeof(Material), typeof(MaterialGeometryModel3D), new UIPropertyMetadata(MaterialChanged));
+            DependencyProperty.Register("Material", typeof(Material), typeof(MaterialGeometryModel3D), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender, MaterialChanged));
 
         /// <summary>
         /// 
@@ -110,7 +121,6 @@ namespace HelixToolkit.Wpf.SharpDX
             if (e.NewValue is PhongMaterial)
             {
                 var model = ((MaterialGeometryModel3D)d);
-                model.phongMaterial = e.NewValue as PhongMaterial;
                 if (model.IsAttached)
                 {
                     var host = model.renderHost;
@@ -119,22 +129,6 @@ namespace HelixToolkit.Wpf.SharpDX
                 }
             }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public IEnumerable<Matrix> Instances
-        {
-            get { return (IEnumerable<Matrix>)this.GetValue(InstancesProperty); }
-            set { this.SetValue(InstancesProperty, value); }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public static readonly DependencyProperty InstancesProperty =
-            DependencyProperty.Register("Instances", typeof(IEnumerable<Matrix>), typeof(MaterialGeometryModel3D), new UIPropertyMetadata(null, InstancesChanged));
-
         /// <summary>
         /// 
         /// </summary>
@@ -149,155 +143,37 @@ namespace HelixToolkit.Wpf.SharpDX
         /// 
         /// </summary>
         public static readonly DependencyProperty TextureCoodScaleProperty =
-            DependencyProperty.Register("TextureCoodScale", typeof(Vector2), typeof(MaterialGeometryModel3D), new UIPropertyMetadata(new Vector2(1, 1)));
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        protected static void InstancesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var model = (MaterialGeometryModel3D)d;
-            if (e.NewValue != null)
-            {
-                model.instanceArray = ((IEnumerable<Matrix>)e.NewValue).ToArray();
-            }
-            else
-            {
-                model.instanceArray = null;
-            }
-            model.isChanged = true;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnGeometryChanged(DependencyPropertyChangedEventArgs e)
-        {
-            if ((this.Instances == null)||(!this.Instances.Any()))
-            {
-                base.OnGeometryChanged(e);
-            }
-            else
-            {
-                if (this.Geometry == null)
-                {
-                    this.Bounds = new BoundingBox();
-                    return;
-                }
-                var b = BoundingBox.FromPoints(this.Geometry.Positions.Array);
-                this.Bounds = b;
-                //this.BoundsDiameter = (b.Maximum - b.Minimum).Length();
-            }
-        }
-
-
+            DependencyProperty.Register("TextureCoodScale", typeof(Vector2), typeof(MaterialGeometryModel3D), new FrameworkPropertyMetadata(new Vector2(1, 1), FrameworkPropertyMetadataOptions.AffectsRender));
 
         /// <summary>
         /// 
         /// </summary>
         protected virtual void AttachMaterial()
         {
-            this.phongMaterial = Material as PhongMaterial;
+            var phongMaterial = Material as PhongMaterial;
             if (phongMaterial != null)
             {
-                this.effectMaterial = new EffectMaterialVariables(this.effect);
-
-                /// --- has texture
-                if (phongMaterial.DiffuseMap != null)
-                {
-                    this.texDiffuseMapView = ShaderResourceView.FromMemory(Device, phongMaterial.DiffuseMap.ToByteArray());
-                    this.effectMaterial.texDiffuseMapVariable.SetResource(this.texDiffuseMapView);
-                    this.effectMaterial.bHasDiffuseMapVariable.Set(true);                    
-                }
-                else
-                {
-                    this.effectMaterial.bHasDiffuseMapVariable.Set(false);
-                }
-
-                // --- has bumpmap
-                if (phongMaterial.NormalMap != null)
-                {
-                    var geometry = this.Geometry as MeshGeometry3D;
-                    if (geometry != null)
-                    {
-                        if (geometry.Tangents == null)
-                        {
-                            //System.Windows.MessageBox.Show(string.Format("No Tangent-Space found. NormalMap will be omitted."), "Warrning", MessageBoxButton.OK);
-                            phongMaterial.NormalMap = null;
-                        }
-                        else
-                        {
-                            this.texNormalMapView = ShaderResourceView.FromMemory(Device, phongMaterial.NormalMap.ToByteArray());
-                            this.effectMaterial.texNormalMapVariable.SetResource(this.texNormalMapView);
-                            this.effectMaterial.bHasNormalMapVariable.Set(true);
-                        }
-                    }
-                }
-                else
-                {
-                    this.effectMaterial.bHasNormalMapVariable.Set(false);
-                }
-
-                // --- has displacement map
-                if (phongMaterial.DisplacementMap != null)
-                {
-                    this.texDisplacementMapView = ShaderResourceView.FromMemory(Device, phongMaterial.DisplacementMap.ToByteArray());
-                    this.effectMaterial.texDisplacementMapVariable.SetResource(this.texDisplacementMapView);
-                    this.effectMaterial.bHasDisplacementMapVariable.Set(true);
-                }
-                else
-                {
-                    this.effectMaterial.bHasDisplacementMapVariable.Set(false);
-                }
+                this.effectMaterial = new EffectMaterialVariables(this.effect, phongMaterial);
+                this.effectMaterial.CreateTextureViews(Device, this);
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>        
-        public override bool HitTest(Ray rayWS, ref List<HitTestResult> hits)
-        {
-            if ((this.Instances != null)&&(this.Instances.Any()))
-            {
-                bool hit = false;
-                foreach (var modelMatrix in Instances)
-                {
-                    var b = this.Bounds;
-                    this.PushMatrix(modelMatrix);
-                    this.Bounds = BoundingBox.FromPoints(this.Geometry.Positions.Select(x => Vector3.TransformCoordinate(x, this.modelMatrix)).ToArray());
-                    if (base.HitTest(rayWS, ref hits))
-                    {
-                        hit = true;
-                        var lastHit = hits[hits.Count - 1];
-                        lastHit.Tag = modelMatrix;
-                        hits[hits.Count - 1] = lastHit;
-                    }
-                    this.PopMatrix();
-                    this.Bounds = b;
-                }
-
-                return hit;
-            }
-            else
-            {
-                return base.HitTest(rayWS, ref hits);
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override void Dispose()
-        {
-            this.Detach();
         }
 
         public class EffectMaterialVariables : System.IDisposable
         {
-            public EffectMaterialVariables(Effect effect)
+            private PhongMaterial material;
+            private ShaderResourceView texDiffuseAlphaMapView;
+            private ShaderResourceView texDiffuseMapView;
+            private ShaderResourceView texNormalMapView;
+            private ShaderResourceView texDisplacementMapView;
+            private EffectVectorVariable vMaterialAmbientVariable, vMaterialDiffuseVariable, vMaterialEmissiveVariable, vMaterialSpecularVariable, vMaterialReflectVariable;
+            private EffectScalarVariable sMaterialShininessVariable;
+            private EffectScalarVariable bHasDiffuseMapVariable, bHasNormalMapVariable, bHasDisplacementMapVariable, bHasDiffuseAlphaMapVariable;
+            private EffectShaderResourceVariable texDiffuseMapVariable, texNormalMapVariable, texDisplacementMapVariable, texShadowMapVariable, texDiffuseAlphaMapVariable;
+            public EffectScalarVariable bHasShadowMapVariable;
+            public EffectMaterialVariables(Effect effect, PhongMaterial material)
             {
+                this.material = material;
+
                 this.vMaterialAmbientVariable = effect.GetVariableByName("vMaterialAmbient").AsVector();
                 this.vMaterialDiffuseVariable = effect.GetVariableByName("vMaterialDiffuse").AsVector();
                 this.vMaterialEmissiveVariable = effect.GetVariableByName("vMaterialEmissive").AsVector();
@@ -305,6 +181,7 @@ namespace HelixToolkit.Wpf.SharpDX
                 this.vMaterialReflectVariable = effect.GetVariableByName("vMaterialReflect").AsVector();
                 this.sMaterialShininessVariable = effect.GetVariableByName("sMaterialShininess").AsScalar();
                 this.bHasDiffuseMapVariable = effect.GetVariableByName("bHasDiffuseMap").AsScalar();
+                this.bHasDiffuseAlphaMapVariable = effect.GetVariableByName("bHasAlphaMap").AsScalar();
                 this.bHasNormalMapVariable = effect.GetVariableByName("bHasNormalMap").AsScalar();
                 this.bHasDisplacementMapVariable = effect.GetVariableByName("bHasDisplacementMap").AsScalar();
                 this.bHasShadowMapVariable = effect.GetVariableByName("bHasShadowMap").AsScalar();
@@ -312,11 +189,81 @@ namespace HelixToolkit.Wpf.SharpDX
                 this.texNormalMapVariable = effect.GetVariableByName("texNormalMap").AsShaderResource();
                 this.texDisplacementMapVariable = effect.GetVariableByName("texDisplacementMap").AsShaderResource();
                 this.texShadowMapVariable = effect.GetVariableByName("texShadowMap").AsShaderResource();
+                this.texDiffuseAlphaMapVariable = effect.GetVariableByName("texAlphaMap").AsShaderResource();
             }
-            public EffectVectorVariable vMaterialAmbientVariable, vMaterialDiffuseVariable, vMaterialEmissiveVariable, vMaterialSpecularVariable, vMaterialReflectVariable;
-            public EffectScalarVariable sMaterialShininessVariable;
-            public EffectScalarVariable bHasDiffuseMapVariable, bHasNormalMapVariable, bHasDisplacementMapVariable, bHasShadowMapVariable;
-            public EffectShaderResourceVariable texDiffuseMapVariable, texNormalMapVariable, texDisplacementMapVariable, texShadowMapVariable;
+
+            public void CreateTextureViews(Device device, MaterialGeometryModel3D model)
+            {
+                if (material != null)
+                {
+                    /// --- has texture
+                    if (material.DiffuseMap != null && model.RenderDiffuseMap)
+                    {
+                        Disposer.RemoveAndDispose(ref this.texDiffuseMapView);
+                        this.texDiffuseMapView = TextureLoader.FromMemoryAsShaderResourceView(device, material.DiffuseMap);
+                    }
+
+                    if (material.DiffuseAlphaMap != null)
+                    {
+                        Disposer.RemoveAndDispose(ref this.texDiffuseAlphaMapView);
+                        this.texDiffuseAlphaMapView = TextureLoader.FromMemoryAsShaderResourceView(device, material.DiffuseAlphaMap);
+                    }
+
+                    // --- has bumpmap
+                    if (material.NormalMap != null && model.RenderNormalMap)
+                    {
+                        var geometry = model.geometryInternal as MeshGeometry3D;
+                        if (geometry != null)
+                        {
+                            if (geometry.Tangents == null)
+                            {
+                                //System.Windows.MessageBox.Show(string.Format("No Tangent-Space found. NormalMap will be omitted."), "Warrning", MessageBoxButton.OK);
+                                material.NormalMap = null;
+                            }
+                            else
+                            {
+                                Disposer.RemoveAndDispose(ref this.texNormalMapView);
+                                this.texNormalMapView = TextureLoader.FromMemoryAsShaderResourceView(device, material.NormalMap);
+                            }
+                        }
+                    }
+
+                    // --- has displacement map
+                    if (material.DisplacementMap != null && model.RenderDisplacementMap)
+                    {
+                        Disposer.RemoveAndDispose(ref this.texDisplacementMapView);
+                        this.texDisplacementMapView = TextureLoader.FromMemoryAsShaderResourceView(device, material.DisplacementMap);
+                    }
+                }
+            }
+
+            public bool AttachMaterial()
+            {
+                // --- has samples              
+                this.bHasDiffuseMapVariable.Set(this.texDiffuseMapView != null);
+                this.bHasDiffuseAlphaMapVariable.Set(this.texDiffuseAlphaMapView != null);
+                this.bHasNormalMapVariable.Set(this.texNormalMapView != null);
+                this.bHasDisplacementMapVariable.Set(this.texDisplacementMapView != null);
+
+                if (material != null)
+                {
+                    this.vMaterialDiffuseVariable.Set(material.DiffuseColorInternal);
+                    this.vMaterialAmbientVariable.Set(material.AmbientColorInternal);
+                    this.vMaterialEmissiveVariable.Set(material.EmissiveColorInternal);
+                    this.vMaterialSpecularVariable.Set(material.SpecularColorInternal);
+                    this.vMaterialReflectVariable.Set(material.ReflectiveColorInternal);
+                    this.sMaterialShininessVariable.Set(material.SpecularShininessInternal);
+                    this.texDiffuseMapVariable.SetResource(this.texDiffuseMapView);
+                    this.texNormalMapVariable.SetResource(this.texNormalMapView);
+                    this.texDiffuseAlphaMapVariable.SetResource(this.texDiffuseAlphaMapView);
+                    this.texDisplacementMapVariable.SetResource(this.texDisplacementMapView);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
 
             public void Dispose()
             {
@@ -330,34 +277,31 @@ namespace HelixToolkit.Wpf.SharpDX
                 Disposer.RemoveAndDispose(ref this.bHasNormalMapVariable);
                 Disposer.RemoveAndDispose(ref this.bHasDisplacementMapVariable);
                 Disposer.RemoveAndDispose(ref this.bHasShadowMapVariable);
+                Disposer.RemoveAndDispose(ref this.bHasDiffuseAlphaMapVariable);
                 Disposer.RemoveAndDispose(ref this.texDiffuseMapVariable);
                 Disposer.RemoveAndDispose(ref this.texNormalMapVariable);
                 Disposer.RemoveAndDispose(ref this.texDisplacementMapVariable);
                 Disposer.RemoveAndDispose(ref this.texShadowMapVariable);
+                Disposer.RemoveAndDispose(ref this.texDiffuseAlphaMapVariable);
+                Disposer.RemoveAndDispose(ref this.texDiffuseMapView);
+                Disposer.RemoveAndDispose(ref this.texNormalMapView);
+                Disposer.RemoveAndDispose(ref this.texDisplacementMapView);
+                Disposer.RemoveAndDispose(ref this.texDiffuseAlphaMapView);
             }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public override void Detach()
-        {                    
-            Disposer.RemoveAndDispose(ref this.vertexBuffer);
-            Disposer.RemoveAndDispose(ref this.indexBuffer);
-            Disposer.RemoveAndDispose(ref this.instanceBuffer);
-
+        protected override void OnDetach()
+        {
             Disposer.RemoveAndDispose(ref this.effectMaterial);
             Disposer.RemoveAndDispose(ref this.effectTransforms);
-            Disposer.RemoveAndDispose(ref this.texDiffuseMapView);
-            Disposer.RemoveAndDispose(ref this.texNormalMapView);
-            Disposer.RemoveAndDispose(ref this.texDisplacementMapView);
-            Disposer.RemoveAndDispose(ref this.bHasInstances);            
 
-            this.phongMaterial = null;            
             this.effectTechnique = null;
             this.vertexLayout = null;
 
-            base.Detach();
+            base.OnDetach();
         }
 
     }

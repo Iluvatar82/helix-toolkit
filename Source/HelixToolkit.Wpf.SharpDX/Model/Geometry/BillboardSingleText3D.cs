@@ -10,7 +10,7 @@ namespace HelixToolkit.Wpf.SharpDX
     public class BillboardSingleText3D : BillboardBase
     {
         private volatile bool isInitialized = false;
-
+        private readonly bool predefinedSize = false;
         /// <summary>
         /// Billboard type, <see cref="BillboardType"/>
         /// </summary>
@@ -114,7 +114,16 @@ namespace HelixToolkit.Wpf.SharpDX
             TextureCoordinates = new Vector2Collection(12);
             TextInfo = new TextInfo();
         }
-
+        public BillboardSingleText3D(float width, float height)
+        {
+            Positions = new Vector3Collection(12);
+            Colors = new Color4Collection(12);
+            TextureCoordinates = new Vector2Collection(12);
+            TextInfo = new TextInfo();
+            Width = width;
+            Height = height;
+            predefinedSize = true;
+        }
         public override void DrawTexture()
         {
             if (!isInitialized)
@@ -124,21 +133,28 @@ namespace HelixToolkit.Wpf.SharpDX
                     Texture = TextInfo.Text.StringToBitmapSource(FontSize, Media.Colors.White, Media.Colors.Black, 
                         this.FontFamily, this.FontWeight, this.FontStyle, Padding);
                     Texture.Freeze();
-                    Width = (float)Texture.Width;
-                    Height = (float)Texture.Height;
-                    DrawCharacter(TextInfo.Text, TextInfo.Origin, (float)Texture.Width, (float)Texture.Height, TextInfo);
+                    if (!predefinedSize)
+                    {
+                        Width = (float)Texture.Width;
+                        Height = (float)Texture.Height;
+                    }
+                    DrawCharacter(TextInfo.Text, TextInfo.Origin, Width, Height, TextInfo);
                 }
                 else
                 {
                     Texture = null;
-                    Width = 0; 
-                    Height = 0;
+                    if (!predefinedSize)
+                    {
+                        Width = 0;
+                        Height = 0;
+                    }
                     Positions.Clear();
                     Colors.Clear();
                     TextureCoordinates.Clear();
                     TextInfo.Offsets.Clear();
                 }
                 isInitialized = true;
+                UpdateBounds();
             }
         }
 
@@ -159,16 +175,12 @@ namespace HelixToolkit.Wpf.SharpDX
             var uv_c = new Vector2(1, 0);
             var uv_d = new Vector2(1, 1);
 
-            ///Create foreground data
-            Positions.Add(info.Origin);
-            Positions.Add(info.Origin);
+            // Create foreground data
             Positions.Add(info.Origin);
             Positions.Add(info.Origin);
             Positions.Add(info.Origin);
             Positions.Add(info.Origin);
 
-            Colors.Add(FontColor);
-            Colors.Add(FontColor);
             Colors.Add(FontColor);
             Colors.Add(FontColor);
             Colors.Add(FontColor);
@@ -177,20 +189,14 @@ namespace HelixToolkit.Wpf.SharpDX
             TextureCoordinates.Add(uv_b);
             TextureCoordinates.Add(uv_d);
             TextureCoordinates.Add(uv_a);
-            TextureCoordinates.Add(uv_a);
-            TextureCoordinates.Add(uv_d);
             TextureCoordinates.Add(uv_c);
 
             info.Offsets.Add(a);
             info.Offsets.Add(c);
             info.Offsets.Add(b);
-            info.Offsets.Add(b);
-            info.Offsets.Add(c);
             info.Offsets.Add(d);
 
-            ///Create background data
-            Positions.Add(info.Origin);
-            Positions.Add(info.Origin);
+            // Create background data
             Positions.Add(info.Origin);
             Positions.Add(info.Origin);
             Positions.Add(info.Origin);
@@ -200,11 +206,7 @@ namespace HelixToolkit.Wpf.SharpDX
             Colors.Add(BackgroundColor);
             Colors.Add(BackgroundColor);
             Colors.Add(BackgroundColor);
-            Colors.Add(BackgroundColor);
-            Colors.Add(BackgroundColor);
 
-            TextureCoordinates.Add(uv_a);
-            TextureCoordinates.Add(uv_a);
             TextureCoordinates.Add(uv_a);
             TextureCoordinates.Add(uv_a);
             TextureCoordinates.Add(uv_a);
@@ -213,8 +215,6 @@ namespace HelixToolkit.Wpf.SharpDX
             info.Offsets.Add(a);
             info.Offsets.Add(c);
             info.Offsets.Add(b);
-            info.Offsets.Add(b);
-            info.Offsets.Add(c);
             info.Offsets.Add(d);
         }
     }

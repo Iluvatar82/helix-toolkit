@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using HelixToolkit.Wpf.SharpDX.Core;
 using SharpDX;
+using System.IO;
 
 namespace HelixToolkit.Wpf.SharpDX
 {
@@ -33,6 +34,12 @@ namespace HelixToolkit.Wpf.SharpDX
             get;
         }
 
+        public virtual Stream AlphaTexture
+        {
+            protected set;
+            get;
+        }
+
         public float Width
         {
             protected set;
@@ -43,6 +50,9 @@ namespace HelixToolkit.Wpf.SharpDX
         {
         }
 
-        public abstract void DrawTexture();
+        public virtual void DrawTexture()
+        {
+            UpdateBounds();
+        }
     }
 }

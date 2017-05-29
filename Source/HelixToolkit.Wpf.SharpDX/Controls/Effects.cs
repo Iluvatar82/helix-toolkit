@@ -78,7 +78,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <returns></returns>
         private static Adapter GetBestAdapter(out int bestAdapterIndex)
         {
-            using (var f = new Factory())
+            using (var f = new Factory1())
             {
                 Adapter bestAdapter = null;
                 bestAdapterIndex = -1;
@@ -173,7 +173,6 @@ namespace HelixToolkit.Wpf.SharpDX
         /// 
         /// Override in a derived class to control how effects are initialized.
         /// </summary>
-        /// <param name="shaderEffectString">The string representing the shader source.</param>
         protected virtual void InitEffects()
         {
             InputLayout defaultInputLayout;
@@ -222,6 +221,10 @@ namespace HelixToolkit.Wpf.SharpDX
                     renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.Lines],
                     renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.Points],
                     renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.BillboardText],
+                    renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.InstancingBlinn],
+                    renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.BoneSkinBlinn],
+                    renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.BillboardInstancing],
+                    renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.ParticleStorm]
                 });
 
                 var phong = renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.Phong];
@@ -239,6 +242,45 @@ namespace HelixToolkit.Wpf.SharpDX
                     new InputElement("TEXCOORD", 2, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
                     new InputElement("TEXCOORD", 3, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
                     new InputElement("TEXCOORD", 4, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                });
+
+                var instancingblinn = renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.InstancingBlinn];
+                var instancingInputLayout = new InputLayout(device, GetEffect(instancingblinn).GetTechniqueByName(DefaultRenderTechniqueNames.InstancingBlinn).GetPassByIndex(0).Description.Signature, new[]
+                {
+                    new InputElement("POSITION", 0, Format.R32G32B32A32_Float, InputElement.AppendAligned, 0),
+                    new InputElement("COLOR",    0, Format.R32G32B32A32_Float, InputElement.AppendAligned, 0),
+                    new InputElement("TEXCOORD", 0, Format.R32G32_Float,       InputElement.AppendAligned, 0),
+                    new InputElement("NORMAL",   0, Format.R32G32B32_Float,    InputElement.AppendAligned, 0),
+                    new InputElement("TANGENT",  0, Format.R32G32B32_Float,    InputElement.AppendAligned, 0),
+                    new InputElement("BINORMAL", 0, Format.R32G32B32_Float,    InputElement.AppendAligned, 0),  
+           
+                    //INSTANCING: die 4 texcoords sind die matrix, die mit jedem buffer reinwandern
+                    new InputElement("TEXCOORD", 1, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 2, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 3, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 4, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                    new InputElement("COLOR", 1, Format.R32G32B32A32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
+                    new InputElement("COLOR", 2, Format.R32G32B32A32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
+                    new InputElement("COLOR", 3, Format.R32G32B32A32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 5, Format.R32G32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
+                });
+
+                var boneSkinBlinn = renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.BoneSkinBlinn];
+                var boneSkinInputLayout = new InputLayout(device, GetEffect(instancingblinn).GetTechniqueByName(DefaultRenderTechniqueNames.BoneSkinBlinn).GetPassByIndex(0).Description.Signature, new[]
+                {
+                    new InputElement("POSITION", 0, Format.R32G32B32A32_Float, InputElement.AppendAligned, 0),
+                    new InputElement("COLOR",    0, Format.R32G32B32A32_Float, InputElement.AppendAligned, 0),
+                    new InputElement("TEXCOORD", 0, Format.R32G32_Float,       InputElement.AppendAligned, 0),
+                    new InputElement("NORMAL",   0, Format.R32G32B32_Float,    InputElement.AppendAligned, 0),
+                    new InputElement("TANGENT",  0, Format.R32G32B32_Float,    InputElement.AppendAligned, 0),
+                    new InputElement("BINORMAL", 0, Format.R32G32B32_Float,    InputElement.AppendAligned, 0),
+                    new InputElement("BONEIDS", 0, Format.R32G32B32A32_SInt, InputElement.AppendAligned, 1),
+                    new InputElement("BONEWEIGHTS", 0, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1),
+                    //INSTANCING: die 4 texcoords sind die matrix, die mit jedem buffer reinwandern
+                    new InputElement("TEXCOORD", 1, Format.R32G32B32A32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 2, Format.R32G32B32A32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 3, Format.R32G32B32A32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 4, Format.R32G32B32A32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
                 });
 
                 var lines = renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.Lines];
@@ -275,6 +317,29 @@ namespace HelixToolkit.Wpf.SharpDX
                     new InputElement("TEXCOORD", 0, Format.R32G32B32A32_Float,  InputElement.AppendAligned, 0),
                 });
 
+                var billboardinstancing = renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.BillboardInstancing];
+                var billboardInstancingInputLayout = new InputLayout(device, GetEffect(billboardinstancing)
+                    .GetTechniqueByName(DefaultRenderTechniqueNames.BillboardInstancing).GetPassByIndex(0).Description.Signature, new[]
+                {
+                    new InputElement("POSITION", 0, Format.R32G32B32A32_Float, InputElement.AppendAligned, 0),
+                    new InputElement("COLOR",    0, Format.R32G32B32A32_Float, InputElement.AppendAligned, 0),
+                    new InputElement("TEXCOORD", 0, Format.R32G32B32A32_Float, InputElement.AppendAligned, 0),
+           
+                    //INSTANCING: die 4 texcoords sind die matrix, die mit jedem buffer reinwandern
+                    new InputElement("TEXCOORD", 1, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 2, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 3, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 4, Format.R32G32B32A32_Float, InputElement.AppendAligned, 1, InputClassification.PerInstanceData, 1),
+                    new InputElement("COLOR", 1, Format.R32G32B32A32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 5, Format.R32G32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
+                    new InputElement("TEXCOORD", 6, Format.R32G32_Float, InputElement.AppendAligned, 2, InputClassification.PerInstanceData, 1),
+                });
+
+                //var particle = renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.ParticleStorm];
+                //var particleLayout = new InputLayout(device, GetEffect(particle).GetTechniqueByName(DefaultRenderTechniqueNames.ParticleStorm)
+                //    .GetPassByIndex(2).Description.Signature,
+                //    null);
+
                 RegisterLayout(new[] { cubeMap }, cubeMapInputLayout);
 
                 RegisterLayout(new[]
@@ -309,6 +374,14 @@ namespace HelixToolkit.Wpf.SharpDX
                     renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.Colors],
                     renderTechniquesManager.RenderTechniques[DefaultRenderTechniqueNames.Wires],
                 }, defaultInputLayout);
+
+                RegisterLayout(new[] { instancingblinn }, instancingInputLayout);
+
+                RegisterLayout(new[] { boneSkinBlinn }, boneSkinInputLayout);
+
+                RegisterLayout(new[] { billboardinstancing }, billboardInstancingInputLayout);
+
+             //   RegisterLayout(new[] { particle }, particleLayout);
             }
             catch (Exception ex)
             {
@@ -391,7 +464,7 @@ namespace HelixToolkit.Wpf.SharpDX
         /// Override in a derived class to control how effects are registered.
         /// </summary>
         /// <param name="shaderEffectString">A string representing the shader code.</param>
-        /// <param name="techniqueName"></param>
+        /// <param name="technique"></param>
         /// <param name="sFlags"></param>
         /// <param name="eFlags"></param>
         protected void RegisterEffect(string shaderEffectString, RenderTechnique technique, ShaderFlags sFlags = ShaderFlags.None, EffectFlags eFlags = EffectFlags.None)

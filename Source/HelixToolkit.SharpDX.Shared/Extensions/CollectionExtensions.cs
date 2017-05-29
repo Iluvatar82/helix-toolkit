@@ -14,6 +14,7 @@ namespace HelixToolkit.Wpf.SharpDX.Extensions
     using System.Collections.Generic;
     using System.Reflection;
     using System.Reflection.Emit;
+    using System.Linq;
 #endif
 
     public static class CollectionExtensions
@@ -58,6 +59,7 @@ namespace HelixToolkit.Wpf.SharpDX.Extensions
 
         /// <summary>
         /// Gets the internal array of a <see cref="List{T}"/>.
+        /// <para>Warning: Internal array length >= List.Count. Use with cautious.</para>
         /// </summary>
         /// <typeparam name="T">The type of the elements.</typeparam>
         /// <param name="list">The respective list.</param>
@@ -65,6 +67,24 @@ namespace HelixToolkit.Wpf.SharpDX.Extensions
         public static T[] GetInternalArray<T>(this List<T> list)
         {
             return ArrayAccessor<T>.Getter(list);
+        }
+
+        public static T[] GetArrayByType<T>(this IList<T> list)
+        {
+            T[] array;
+            if (list is List<T>)
+            {
+                array = (list as List<T>).GetInternalArray();
+            }
+            else if (list is T[])
+            {
+                array = list as T[];
+            }
+            else
+            {
+                array = list.ToArray();
+            }
+            return array;
         }
 #endif
 

@@ -19,6 +19,10 @@ namespace HelixToolkit.Wpf.SharpDX
         public const string Points = "RenderPoints";
         public const string CubeMap = "RenderCubeMap";
         public const string BillboardText = "RenderBillboard";
+        public const string BillboardInstancing = "RenderBillboardInstancing";
+        public const string InstancingBlinn = "RenderInstancingBlinn";
+        public const string BoneSkinBlinn = "RenderBoneSkinBlinn";
+        public const string ParticleStorm = "ParticleStorm";
     }
 
     public struct TessellationRenderTechniqueNames
@@ -80,6 +84,10 @@ namespace HelixToolkit.Wpf.SharpDX
             AddDefaultTechnique(DefaultRenderTechniqueNames.Lines);
             AddDefaultTechnique(DefaultRenderTechniqueNames.Points);
             AddDefaultTechnique(DefaultRenderTechniqueNames.BillboardText);
+            AddDefaultTechnique(DefaultRenderTechniqueNames.BillboardInstancing);
+            AddDefaultTechnique(DefaultRenderTechniqueNames.InstancingBlinn);
+            AddDefaultTechnique(DefaultRenderTechniqueNames.BoneSkinBlinn);
+            AddDefaultTechnique(DefaultRenderTechniqueNames.ParticleStorm);
         }
 
         protected void AddDefaultTechnique(string techniqueName)

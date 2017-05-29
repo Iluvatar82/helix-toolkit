@@ -15,5 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\SharedFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\SweepLinePolygonTriangulator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HelixToolkitException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\ContourHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helper\SimpleRingBuffer.cs" />
   </ItemGroup>
 </Project>

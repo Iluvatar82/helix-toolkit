@@ -33,9 +33,6 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// Handles changes in the Children collection.
         /// </summary>
-        /// <param name="sender">
-        /// The sender.
-        /// </param>
         /// <param name="e">
         /// The <see cref="NotifyCollectionChangedEventArgs"/> instance containing the event data.
         /// </param>
@@ -216,7 +213,7 @@ namespace HelixToolkit.Wpf.SharpDX
                     }
                 }
 
-                /// attach new elements if they are renderable
+                // attach new elements if they are renderable
                 if (this.IsAttached)
                 {
                     foreach (var item in newValue)
@@ -263,8 +260,15 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         ///     Detaches this instance.
         /// </summary>
-        public virtual void Detach()
+        public void Detach()
         {
+            OnDetach();
+        }
+        /// <summary>
+        /// Override Detach
+        /// </summary>
+        protected virtual void OnDetach()
+        {           
             foreach (var item in this.children)
             {
                 var model = item as Element3D;
@@ -279,22 +283,36 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <summary>
         /// 
         /// </summary>        
-        public virtual void Update(TimeSpan timeSpan)
-        {
-            foreach (var item in this.children)
-            {
-                var element = item as IRenderable;
-                if (element != null)
-                {
-                    element.Update(timeSpan);
-                }
-            }
-        }
+        //public virtual void Update(TimeSpan timeSpan)
+        //{
+        //    //foreach (var item in this.children)
+        //    //{
+        //    //    var element = item as IRenderable;
+        //    //    if (element != null)
+        //    //    {
+        //    //        element.Update(timeSpan);
+        //    //    }
+        //    //}
+        //}
 
         /// <summary>
         /// Compute hit-testing for all children
         /// </summary>
-        public virtual bool HitTest(Ray ray, ref List<HitTestResult> hits)
+        public bool HitTest(IRenderMatrices context, Ray ray, ref List<HitTestResult> hits)
+        {
+            if (CanHitTest(context))
+            {
+                return OnHitTest(context, ray, ref hits);
+            }
+            else return false;
+        }
+
+        protected virtual bool CanHitTest(IRenderMatrices context)
+        {
+            return IsHitTestVisible && Visibility == System.Windows.Visibility.Visible;
+        }
+
+        protected virtual bool OnHitTest(IRenderMatrices context, Ray ray, ref List<HitTestResult> hits)
         {
             bool hit = false;
 
@@ -307,7 +325,7 @@ namespace HelixToolkit.Wpf.SharpDX
                     if (tc != null)
                     {
                         //tc.PushMatrix(this.modelMatrix);
-                        if (hc.HitTest(ray, ref hits))
+                        if (hc.HitTest(context, ray, ref hits))
                         {
                             hit = true;
                         }
@@ -315,7 +333,7 @@ namespace HelixToolkit.Wpf.SharpDX
                     }
                     else
                     {
-                        if (hc.HitTest(ray, ref hits))
+                        if (hc.HitTest(context, ray, ref hits))
                         {
                             hit = true;
                         }
@@ -324,6 +342,8 @@ namespace HelixToolkit.Wpf.SharpDX
             }
             return hit;
         }        
+
+
 
         /// <summary>
         /// 
@@ -369,11 +389,11 @@ namespace HelixToolkit.Wpf.SharpDX
             }
         }
 
-        /// <summary>
-        /// a Model3D does not have bounds, 
-        /// if you want to have a model with bounds, use GeometryModel3D instead:
-        /// but this prevents the CompositeModel3D containg lights, etc. (Lights3D are Models3D, which do not have bounds)
-        /// </summary>
+        ///// <summary>
+        ///// a Model3D does not have bounds, 
+        ///// if you want to have a model with bounds, use GeometryModel3D instead:
+        ///// but this prevents the CompositeModel3D containg lights, etc. (Lights3D are Models3D, which do not have bounds)
+        ///// </summary>
         //private void UpdateBounds()
         //{
         //    var bb = this.Bounds;
