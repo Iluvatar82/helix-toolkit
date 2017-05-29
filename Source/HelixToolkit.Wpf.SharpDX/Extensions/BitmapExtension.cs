@@ -14,18 +14,8 @@ namespace HelixToolkit.Wpf.SharpDX.Extensions
     {
         public static BitmapSource ToBitmapSource(this TextBlock element, bool freeze = true)
         {
-            var target = new RenderTargetBitmap((int)(element.Width), (int)(element.Height), 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
-            var brush = new System.Windows.Media.VisualBrush(element);
-
-            var visual = new System.Windows.Media.DrawingVisual();
-            var drawingContext = visual.RenderOpen();
-
-
-            drawingContext.DrawRectangle(brush, null, new Rect(new System.Windows.Point(0, 0),
-                new System.Windows.Point(element.Width, element.Height)));
-
-            drawingContext.Close();
-            target.Render(visual);
+            var target = new RenderTargetBitmap((int)(element.RenderSize.Width), (int)(element.RenderSize.Height), 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+            target.Render(element);
             if (freeze)
             {
                 target.Freeze();
@@ -36,7 +26,7 @@ namespace HelixToolkit.Wpf.SharpDX.Extensions
         public static BitmapSource StringToBitmapSource(this string str, int fontSize, System.Windows.Media.Color foreground,
             System.Windows.Media.Color background)
         {
-            return StringToBitmapSource(str, fontSize, foreground, background, 
+            return StringToBitmapSource(str, fontSize, foreground, background,
                 new System.Windows.Media.FontFamily("Arial"));
         }
 
@@ -51,11 +41,11 @@ namespace HelixToolkit.Wpf.SharpDX.Extensions
             System.Windows.Media.Color background, Media.FontFamily fontFamily, FontWeight fontWeight)
         {
             return StringToBitmapSource(str, fontSize, foreground, background,
-               fontFamily, fontWeight, FontStyles.Normal);
+               fontFamily, fontWeight, FontStyles.Normal, new Thickness(0));
         }
 
-        public static BitmapSource StringToBitmapSource(this string str, int fontSize, System.Windows.Media.Color foreground, 
-            System.Windows.Media.Color background, Media.FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle)
+        public static BitmapSource StringToBitmapSource(this string str, int fontSize, System.Windows.Media.Color foreground,
+            System.Windows.Media.Color background, Media.FontFamily fontFamily, FontWeight fontWeight, FontStyle fontStyle, Thickness padding)
         {
             TextBlock tbX = new TextBlock();
             tbX.FontFamily = fontFamily;
@@ -66,6 +56,7 @@ namespace HelixToolkit.Wpf.SharpDX.Extensions
             tbX.FontStretch = FontStretches.Normal;
             tbX.FontWeight = fontWeight;
             tbX.FontStyle = fontStyle;
+            tbX.Padding = padding;
             tbX.Text = str;
             var size = tbX.MeasureString();
             tbX.Width = size.Width;
@@ -85,7 +76,7 @@ namespace HelixToolkit.Wpf.SharpDX.Extensions
                 textBlock.FontSize,
                 Media.Brushes.Black);
 
-            return new Size(formattedText.Width, formattedText.Height);
+            return new Size(formattedText.Width + textBlock.Padding.Left + textBlock.Padding.Right, formattedText.Height + textBlock.Padding.Top + textBlock.Padding.Bottom);
         }
     }
 }
