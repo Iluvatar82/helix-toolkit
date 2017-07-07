@@ -46,43 +46,43 @@ namespace HelixToolkit.Wpf.SharpDX
         /// <param name="host">
         /// The host.
         /// </param>
-        public override void Attach(IRenderHost host)
+        protected override bool OnAttach(IRenderHost host)
         {
-            base.Attach(host);
             foreach (var model in this.Children)
             {
                 if (model.Parent == null)
                 {
-                    this.AddLogicalChild(model);                    
+                    this.AddLogicalChild(model);
                 }
 
                 model.Attach(host);
             }
+            return true;
         }
 
         /// <summary>
         ///     Detaches this instance.
         /// </summary>
-        public override void Detach()
+        protected override void OnDetach()
         {
             foreach (var model in this.Children)
             {
                 model.Detach();
                 if (model.Parent == this)
                 {
-                    this.RemoveLogicalChild(model);                    
+                    this.RemoveLogicalChild(model);
                 }
             }
-            base.Detach();
+            base.OnDetach();
         }
 
         /// <summary>
         /// Compute hit-testing for all children
         /// </summary>
-        public override bool HitTest(Ray ray, ref List<HitTestResult> hits)
+        protected override bool OnHitTest(IRenderMatrices context, Ray ray, ref List<HitTestResult> hits)
         {
-            bool hit = base.HitTest(ray, ref hits);
-            
+            bool hit = false;
+
             foreach (var c in this.Children)
             {
                 var hc = c as IHitable;
@@ -92,7 +92,7 @@ namespace HelixToolkit.Wpf.SharpDX
                     if (tc != null)
                     {
                         tc.PushMatrix(this.modelMatrix);
-                        if (hc.HitTest(ray, ref hits))
+                        if (hc.HitTest(context, ray, ref hits))
                         {
                             hit = true;
                         }
@@ -100,7 +100,7 @@ namespace HelixToolkit.Wpf.SharpDX
                     }
                     else
                     {
-                        if (hc.HitTest(ray, ref hits))
+                        if (hc.HitTest(context, ray, ref hits))
                         {
                             hit = true;
                         }
@@ -108,7 +108,7 @@ namespace HelixToolkit.Wpf.SharpDX
                 }
             }
             return hit;
-        }        
+        }
 
         /// <summary>
         /// 
@@ -118,22 +118,18 @@ namespace HelixToolkit.Wpf.SharpDX
             this.Detach();
         }
 
+        protected override bool CanRender(RenderContext context)
+        {
+            return IsRendering && Visibility == System.Windows.Visibility.Visible;
+        }
         /// <summary>
         /// Renders the specified context.
         /// </summary>
         /// <param name="context">
         /// The context.
         /// </param>
-        public override void Render(RenderContext context)
+        protected override void OnRender(RenderContext context)
         {
-            if (!this.IsRendering)
-                return;
-
-            if (this.Visibility != System.Windows.Visibility.Visible)
-                return;
-
-            base.Render(context);
-
             // you mean like this?
             foreach (var c in this.Children)
             {
@@ -165,57 +161,62 @@ namespace HelixToolkit.Wpf.SharpDX
         /// </param>
         private void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            switch (e.Action)
+            if (e.OldItems != null)
             {
-                case NotifyCollectionChangedAction.Remove:
-                case NotifyCollectionChangedAction.Replace:
-                    foreach (Model3D item in e.OldItems)
-                    {
-                        // todo: detach?
-                        // yes, always
-                        item.Detach();
-                        if (item.Parent == this)
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Reset:
+                    case NotifyCollectionChangedAction.Remove:
+                    case NotifyCollectionChangedAction.Replace:
+                        foreach (Model3D item in e.OldItems)
                         {
-                            this.RemoveLogicalChild(item);                            
-                        }
-                    }
-
-                    break;
-            }
-
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                case NotifyCollectionChangedAction.Replace:
-                    foreach (Model3D item in e.NewItems)
-                    {
-                        if (this.IsAttached)
-                        {
-                            // todo: attach?
-                            // yes, always  
-                            // where to get a refrence to renderHost?
-                            // store it as private memeber of the class?
-                            if (item.Parent == null)
+                            // todo: detach?
+                            // yes, always
+                            item.Detach();
+                            if (item.Parent == this)
                             {
-                                this.AddLogicalChild(item);
+                                this.RemoveLogicalChild(item);
                             }
-
-                            item.Attach(this.renderHost);
                         }
-                    }
-
-                    break;
+                        break;
+                }
             }
 
+            if (e.NewItems != null)
+            {
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Reset:
+                    case NotifyCollectionChangedAction.Add:
+                    case NotifyCollectionChangedAction.Replace:
+                        foreach (Model3D item in e.NewItems)
+                        {
+                            if (this.IsAttached)
+                            {
+                                // todo: attach?
+                                // yes, always  
+                                // where to get a refrence to renderHost?
+                                // store it as private memeber of the class?
+                                if (item.Parent == null)
+                                {
+                                    this.AddLogicalChild(item);
+                                }
+
+                                item.Attach(this.renderHost);
+                            }
+                        }
+                        break;
+                }
+            }
             UpdateBounds();
         }
-        
+
         /// <summary>
         /// a Model3D does not have bounds, 
         /// if you want to have a model with bounds, use GeometryModel3D instead:
         /// but this prevents the CompositeModel3D containg lights, etc. (Lights3D are Models3D, which do not have bounds)
         /// </summary>
-        private void UpdateBounds()
+        protected void UpdateBounds()
         {
             var bb = this.Bounds;
             foreach (var item in this.Children)
@@ -226,7 +227,7 @@ namespace HelixToolkit.Wpf.SharpDX
                     bb = BoundingBox.Merge(bb, model.Bounds);
                 }
             }
-            this.Bounds = bb;            
+            this.Bounds = bb;
         }
     }
 }

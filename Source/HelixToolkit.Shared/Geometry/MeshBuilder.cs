@@ -23,7 +23,9 @@ namespace HelixToolkit.Wpf
     using global::SharpDX;
     using HelixToolkit.Wpf.SharpDX.Core;
 
+#if !NETFX_CORE
     using Rect3D = System.Windows.Media.Media3D.Rect3D;
+#endif
     using Point = global::SharpDX.Vector2;
     using Point3D = global::SharpDX.Vector3;
     using Vector3D = global::SharpDX.Vector3;
@@ -192,10 +194,12 @@ namespace HelixToolkit.Wpf
         /// The closed circle cache.
         /// </summary>
         private static readonly ThreadLocal<Dictionary<int, IList<Point>>> ClosedCircleCache = new ThreadLocal<Dictionary<int, IList<Point>>>(() => new Dictionary<int, IList<Point>>());
+#if !NETFX_CORE
         /// <summary>
         /// The unit sphere cache.
         /// </summary>
         private static readonly ThreadLocal<Dictionary<int, MeshGeometry3D>> UnitSphereCache = new ThreadLocal<Dictionary<int, MeshGeometry3D>>(() => new Dictionary<int, MeshGeometry3D>());
+#endif
         #endregion Static and Const
 
 
@@ -429,6 +433,8 @@ namespace HelixToolkit.Wpf
 
             return circleSegment;
         }
+
+#if !NETFX_CORE
         /// <summary>
         /// Gets a unit sphere from the cache.
         /// </summary>
@@ -456,12 +462,14 @@ namespace HelixToolkit.Wpf
             {
                 var v = mb.Positions[i].ToVector3D();
                 v.Normalize();
-                mb.Positions[i] = SharedFunctions.ToPoint3D(v);
+                mb.Positions[i] = SharedFunctions.ToPoint3D(ref v);
             }
             var mesh = mb.ToMesh();
             UnitSphereCache.Value[subdivisions] = mesh;
             return mesh;
         }
+#endif
+
         /// <summary>
         /// Calculate the Mesh's Normals
         /// </summary>
@@ -485,11 +493,11 @@ namespace HelixToolkit.Wpf
                 var v3 = positions[i3];
                 var p1 = v2 - v1;
                 var p2 = v3 - v1;
-                var n = SharedFunctions.CrossProduct(p1, p2);
+                var n = SharedFunctions.CrossProduct(ref p1, ref p2);
                 // angle
                 p1.Normalize();
                 p2.Normalize();
-                var a = (float)Math.Acos(SharedFunctions.DotProduct(p1, p2));
+                var a = (float)Math.Acos(SharedFunctions.DotProduct(ref p1, ref p2));
                 n.Normalize();
                 normals[i1] += (a * n);
                 normals[i2] += (a * n);
@@ -572,9 +580,9 @@ namespace HelixToolkit.Wpf
             {
                 var n = normals[i];
                 var t = tan1[i];
-                t = (t - n * SharedFunctions.DotProduct(n, t));
+                t = (t - n * SharedFunctions.DotProduct(ref n, ref t));
                 t.Normalize();
-                var b = SharedFunctions.CrossProduct(n, t);
+                var b = SharedFunctions.CrossProduct(ref n, ref t);
                 tangents.Add(t);
                 bitangents.Add(b);
             }
@@ -629,13 +637,15 @@ namespace HelixToolkit.Wpf
             {
                 var n = normals[i];
                 var t = tan1[i];
-                t = (t - n * SharedFunctions.DotProduct(n, t));
+                t = (t - n * SharedFunctions.DotProduct(ref n, ref t));
                 t.Normalize();
-                var b = SharedFunctions.CrossProduct(n, t);
+                var b = SharedFunctions.CrossProduct(ref n, ref t);
                 tangents.Add(t);
                 bitangents.Add(b);
             }
         }
+
+#if !NETFX_CORE
         /// <summary>
         /// Calculate the Tangents for a MeshGeometry3D.
         /// </summary>
@@ -649,6 +659,8 @@ namespace HelixToolkit.Wpf
             meshGeometry.BiTangents = new Vector3DCollection(t2);
 #endif
         }
+#endif
+
         /// <summary>
         /// Calculate the Normals and Tangents for all MeshFaces.
         /// </summary>
@@ -709,7 +721,7 @@ namespace HelixToolkit.Wpf
         public void AddArrow(Point3D point1, Point3D point2, double diameter, double headLength = 3, int thetaDiv = 18)
         {
             var dir = point2 - point1;
-            var length = SharedFunctions.Length(dir);
+            var length = SharedFunctions.Length(ref dir);
             var r = (DoubleOrSingle)diameter / 2;
 
             var pc = new PointCollection
@@ -723,6 +735,8 @@ namespace HelixToolkit.Wpf
 
             this.AddRevolvedGeometry(pc, null, point1, dir, thetaDiv);
         }
+
+#if !NETFX_CORE
         /// <summary>
         /// Adds the edges of a bounding box as cylinders.
         /// </summary>
@@ -760,6 +774,8 @@ namespace HelixToolkit.Wpf
             addEdge(p2, p6);
             addEdge(p3, p7);
         }
+#endif
+
         /// <summary>
         /// Adds a box aligned with the X, Y and Z axes.
         /// </summary>
@@ -779,6 +795,8 @@ namespace HelixToolkit.Wpf
         {
             this.AddBox(center, xlength, ylength, zlength, BoxFaces.All);
         }
+
+#if !NETFX_CORE
         /// <summary>
         /// Adds a box aligned with the X, Y and Z axes.
         /// </summary>
@@ -792,6 +810,8 @@ namespace HelixToolkit.Wpf
                 new Point3D((DoubleOrSingle)(rectangle.X + (rectangle.SizeX * 0.5f)), (DoubleOrSingle)(rectangle.Y + (rectangle.SizeY * 0.5f)), (DoubleOrSingle)(rectangle.Z + (rectangle.SizeZ * 0.5f))),
                 (DoubleOrSingle)rectangle.SizeX, (DoubleOrSingle)rectangle.SizeY, (DoubleOrSingle)rectangle.SizeZ, faces);
         }
+#endif
+
         /// <summary>
         /// Adds a box with the specified faces, aligned with the X, Y and Z axes.
         /// </summary>
@@ -826,7 +846,7 @@ namespace HelixToolkit.Wpf
         /// <param name="faces">The faces to include.</param>
         public void AddBox(Point3D center, Vector3D x, Vector3D y, double xlength, double ylength, double zlength, BoxFaces faces = BoxFaces.All)
         {
-            var z = SharedFunctions.CrossProduct(x, y);
+            var z = SharedFunctions.CrossProduct(ref x, ref y);
             if ((faces & BoxFaces.Front) == BoxFaces.Front)
             {
                 this.AddCubeFace(center, x, z, xlength, ylength, zlength);
@@ -924,7 +944,7 @@ namespace HelixToolkit.Wpf
         public void AddCone(Point3D origin, Point3D apex, double baseRadius, bool baseCap, int thetaDiv)
         {
             var dir = apex - origin;
-            this.AddCone(origin, dir, baseRadius, 0, SharedFunctions.Length(dir), baseCap, false, thetaDiv);
+            this.AddCone(origin, dir, baseRadius, 0, SharedFunctions.Length(ref dir), baseCap, false, thetaDiv);
         }
         /// <summary>
         /// Adds a cube face.
@@ -949,7 +969,7 @@ namespace HelixToolkit.Wpf
         /// </param>
         public void AddCubeFace(Point3D center, Vector3D normal, Vector3D up, double dist, double width, double height)
         {
-            var right = SharedFunctions.CrossProduct(normal, up);
+            var right = SharedFunctions.CrossProduct(ref normal, ref up);
             var n = normal * (DoubleOrSingle)dist / 2;
             up *= (DoubleOrSingle)height / 2;
             right *= (DoubleOrSingle)width / 2;
@@ -1175,7 +1195,7 @@ namespace HelixToolkit.Wpf
         public void AddCylinder(Point3D p1, Point3D p2, double diameter, int thetaDiv)
         {
             Vector3D n = p2 - p1;
-            var l = SharedFunctions.Length(n);
+            var l = SharedFunctions.Length(ref n);
             n.Normalize();
             this.AddCone(p1, n, diameter / 2, diameter / 2, l, false, false, thetaDiv);
         }
@@ -1206,7 +1226,7 @@ namespace HelixToolkit.Wpf
         public void AddCylinder(Point3D p1, Point3D p2, double radius = 1, int thetaDiv = 32, bool cap1 = true, bool cap2 = true)
         {
             Vector3D n = p2 - p1;
-            var l = SharedFunctions.Length(n);
+            var l = SharedFunctions.Length(ref n);
             n.Normalize();
             this.AddCone(p1, n, radius, radius, l, cap1, cap2, thetaDiv);
         }
@@ -1228,7 +1248,7 @@ namespace HelixToolkit.Wpf
             // If points already exist in the MeshBuilder
             var positionsCount = this.positions.Count;
 
-            var right = SharedFunctions.CrossProduct(up, forward);
+            var right = SharedFunctions.CrossProduct(ref up, ref forward);
             // Distance from the Center to the Dodekaeder-Points
             var radiusSphere = 0.25f * (DoubleOrSingle)Math.Sqrt(3) * (1 + (DoubleOrSingle)Math.Sqrt(5)) * (DoubleOrSingle)sideLength;
             var radiusFace = 0.1f * (DoubleOrSingle)Math.Sqrt(50 + 10 * (DoubleOrSingle)Math.Sqrt(5)) * (DoubleOrSingle)sideLength;
@@ -1254,9 +1274,9 @@ namespace HelixToolkit.Wpf
                 baseCenterToPoint.Normalize();
                 var centerToPoint = point - center;
                 centerToPoint.Normalize();
-                var tempRight = SharedFunctions.CrossProduct(up, baseCenterToPoint);
+                var tempRight = SharedFunctions.CrossProduct(ref up, ref baseCenterToPoint);
                 var newPoint = new Point3D(radiusSphere * (DoubleOrSingle)Math.Cos(gamma), 0, radiusSphere * (DoubleOrSingle)Math.Sin(gamma));
-                var tempUp = SharedFunctions.CrossProduct(centerToPoint, tempRight);
+                var tempUp = SharedFunctions.CrossProduct(ref centerToPoint, ref tempRight);
                 this.positions.Add(center + centerToPoint * newPoint.X + tempUp * newPoint.Z);
             }
 
@@ -1275,9 +1295,9 @@ namespace HelixToolkit.Wpf
                 topCenterToPoint.Normalize();
                 var centerToPoint = point - center;
                 centerToPoint.Normalize();
-                var tempRight = SharedFunctions.CrossProduct(up, topCenterToPoint);
+                var tempRight = SharedFunctions.CrossProduct(ref up, ref topCenterToPoint);
                 var newPoint = new Point3D(radiusSphere * (DoubleOrSingle)Math.Cos(gamma), 0, radiusSphere * (DoubleOrSingle)Math.Sin(gamma));
-                var tempUp = SharedFunctions.CrossProduct(tempRight, centerToPoint);
+                var tempUp = SharedFunctions.CrossProduct(ref tempRight, ref centerToPoint);
                 this.positions.Add(center + centerToPoint * newPoint.X + tempUp * newPoint.Z);
             }
             // Add top Points at last
@@ -1304,10 +1324,10 @@ namespace HelixToolkit.Wpf
                 {
                     var centerToPoint = this.positions[i] - center;
                     centerToPoint.Normalize();
-                    var cTPUpValue = SharedFunctions.DotProduct(centerToPoint, up);
+                    var cTPUpValue = SharedFunctions.DotProduct(ref centerToPoint, ref up);
                     var planeCTP = centerToPoint - up * cTPUpValue;
                     planeCTP.Normalize();
-                    var u = (DoubleOrSingle)Math.Atan2(SharedFunctions.DotProduct(planeCTP, forward), SharedFunctions.DotProduct(planeCTP, right));
+                    var u = (DoubleOrSingle)Math.Atan2(SharedFunctions.DotProduct(ref planeCTP, ref forward), SharedFunctions.DotProduct(ref planeCTP, ref right));
                     var v = cTPUpValue * 0.5f + 0.5f;
                     this.textureCoordinates.Add(new Point(u, v));
                 }
@@ -1444,7 +1464,8 @@ namespace HelixToolkit.Wpf
         /// </remarks>
         public void AddExtrudedGeometry(IList<Point> points, Vector3D xaxis, Point3D p0, Point3D p1)
         {
-            var ydirection = SharedFunctions.CrossProduct(xaxis, p1 - p0);
+            var p10 = p1 - p0;
+            var ydirection = SharedFunctions.CrossProduct(ref xaxis, ref p10);
             ydirection.Normalize();
             xaxis.Normalize();
 
@@ -1801,8 +1822,8 @@ namespace HelixToolkit.Wpf
             {
                 throw new InvalidOperationException("The number of points should be even.");
             }
-
-            var axisY = SharedFunctions.CrossProduct(axisX, p1 - p0);
+            var p10 = p1 - p0;
+            var axisY = SharedFunctions.CrossProduct(ref axisX, ref p10);
             axisY.Normalize();
             axisX.Normalize();
             int index0 = this.positions.Count;
@@ -1965,7 +1986,7 @@ namespace HelixToolkit.Wpf
         /// <remarks>See <a href="http://en.wikipedia.org/wiki/Octahedron">Octahedron</a>.</remarks>
         public void AddOctahedron(Point3D center, Vector3D forward, Vector3D up, double sideLength, double height)
         {
-            var right = SharedFunctions.CrossProduct(forward, up);
+            var right = SharedFunctions.CrossProduct(ref forward, ref up);
             var n = forward * (DoubleOrSingle)sideLength / 2;
             up *= (DoubleOrSingle)height / 2;
             right *= (DoubleOrSingle)sideLength / 2;
@@ -2009,7 +2030,7 @@ namespace HelixToolkit.Wpf
         {
             var dir = point2 - point1;
 
-            var height = SharedFunctions.Length(dir);
+            var height = SharedFunctions.Length(ref dir);
             dir.Normalize();
 
             var pc = new PointCollection
@@ -2196,7 +2217,7 @@ namespace HelixToolkit.Wpf
         /// <param name="closeBase">Add triangles to the base of the pyramid or not.</param>
         public void AddPyramid(Point3D center, Vector3D forward, Vector3D up, double sideLength, double height, bool closeBase = false)
         {
-            var right = SharedFunctions.CrossProduct(forward, up);
+            var right = SharedFunctions.CrossProduct(ref forward, ref up);
             var n = forward * (DoubleOrSingle)sideLength / 2;
             up *= (DoubleOrSingle)height;
             right *= (DoubleOrSingle)sideLength / 2;
@@ -2320,7 +2341,9 @@ namespace HelixToolkit.Wpf
 
             if (this.normals != null)
             {
-                var w = SharedFunctions.CrossProduct(p1 - p0, p3 - p0);
+                var p10 = p1 - p0;
+                var p30 = p3 - p0;
+                var w = SharedFunctions.CrossProduct(ref p10, ref p30);
                 w.Normalize();
                 this.normals.Add(w);
                 this.normals.Add(w);
@@ -2651,7 +2674,7 @@ namespace HelixToolkit.Wpf
                         this.positions[index0 + (i1 * columns) + j0], this.positions[index0 + (i0 * columns) + j0]);
                     var v = Point3D.Subtract(
                         this.positions[index0 + (i0 * columns) + j1], this.positions[index0 + (i0 * columns) + j0]);
-                    var normal = SharedFunctions.CrossProduct(u, v);
+                    var normal = SharedFunctions.CrossProduct(ref u, ref v);
                     normal.Normalize();
                     this.normals.Add(normal);
                 }
@@ -2700,7 +2723,7 @@ namespace HelixToolkit.Wpf
         /// <param name="isSpherical">
         /// set the flag to true to create a sphere mesh (triangles at top and bottom).
         /// </param>
-        private void AddRectangularMeshTriangleIndices(int index0, int rows, int columns, bool isSpherical = false)
+        public void AddRectangularMeshTriangleIndices(int index0, int rows, int columns, bool isSpherical = false)
         {
             for (int i = 0; i < rows - 1; i++)
             {
@@ -2741,7 +2764,7 @@ namespace HelixToolkit.Wpf
         /// <param name="columnsClosed">
         /// True if columns are closed.
         /// </param>
-        private void AddRectangularMeshTriangleIndices(
+        public void AddRectangularMeshTriangleIndices(
             int index0, int rows, int columns, bool rowsClosed, bool columnsClosed)
         {
             int m2 = rows - 1;
@@ -2886,7 +2909,7 @@ namespace HelixToolkit.Wpf
 
             // Find two unit vectors orthogonal to the specified direction
             var u = direction.FindAnyPerpendicular();
-            var v = SharedFunctions.CrossProduct(direction, u);
+            var v = SharedFunctions.CrossProduct(ref direction, ref u);
             u.Normalize();
             v.Normalize();
 
@@ -2965,6 +2988,8 @@ namespace HelixToolkit.Wpf
         {
             this.AddEllipsoid(center, radius, radius, radius, thetaDiv, phiDiv);
         }
+
+#if !NETFX_CORE
         /// <summary>
         /// Adds a sphere (by subdividing a regular icosahedron).
         /// </summary>
@@ -2991,6 +3016,8 @@ namespace HelixToolkit.Wpf
                 this.positions[i] = center + ((DoubleOrSingle)radius * pVec);
             }
         }
+#endif
+
         /// <summary>
         /// Adds a surface of revolution.
         /// </summary>
@@ -3018,7 +3045,7 @@ namespace HelixToolkit.Wpf
 
             // Find two unit vectors orthogonal to the specified direction
             var u = axis.FindAnyPerpendicular();
-            var v = SharedFunctions.CrossProduct(axis, u);
+            var v = SharedFunctions.CrossProduct(ref axis, ref u);
             var circle = GetCircle(thetaDiv);
             int n = section.Count;
             int index0 = this.positions.Count;
@@ -3081,7 +3108,7 @@ namespace HelixToolkit.Wpf
         public void AddTetrahedron(Point3D center, Vector3D forward, Vector3D up, double sideLength)
         {
             // Helper Variables
-            var right = SharedFunctions.CrossProduct(up, forward);
+            var right = SharedFunctions.CrossProduct(ref up, ref forward);
             var heightSphere = (DoubleOrSingle)Math.Sqrt(6) / 3 * (DoubleOrSingle)sideLength;
             var radiusSphere = (DoubleOrSingle)Math.Sqrt(6) / 4 * (DoubleOrSingle)sideLength;
             var heightFace = (DoubleOrSingle)Math.Sqrt(3) / 2 * (DoubleOrSingle)sideLength;
@@ -3384,7 +3411,9 @@ namespace HelixToolkit.Wpf
 
             if (this.normals != null)
             {
-                var w = SharedFunctions.CrossProduct(p1 - p0, p2 - p0);
+                var p10 = p1 - p0;
+                var p20 = p2 - p0;
+                var w = SharedFunctions.CrossProduct(ref p10, ref p20);
                 w.Normalize();
                 this.normals.Add(w);
                 this.normals.Add(w);
@@ -3737,9 +3766,9 @@ namespace HelixToolkit.Wpf
                 int i0 = i > 0 ? i - 1 : i;
                 int i1 = i + 1 < pathLength ? i + 1 : i;
                 var forward = path[i1] - path[i0];
-                var right = SharedFunctions.CrossProduct(up, forward);
+                var right = SharedFunctions.CrossProduct(ref up, ref forward);
 
-                up = SharedFunctions.CrossProduct(forward, right);
+                up = SharedFunctions.CrossProduct(ref forward, ref right);
                 up.Normalize();
                 right.Normalize();
                 var u = right;
@@ -3758,7 +3787,7 @@ namespace HelixToolkit.Wpf
                     up = lastUp;
                     //** Please verify that negation of "up" is correct here
                     up *= -1;
-                    right = SharedFunctions.CrossProduct(up, forward);
+                    right = SharedFunctions.CrossProduct(ref up, ref forward);
                     up.Normalize();
                     right.Normalize();
                     u = right;
@@ -3799,7 +3828,7 @@ namespace HelixToolkit.Wpf
                 var count = path.Count;
                 if (backCap)
                 {
-                    var circleBack = Positions.Skip(Positions.Count - section.Count).Take(section.Count).ToArray();
+                    var circleBack = Positions.Skip(Positions.Count - section.Count).Take(section.Count).Reverse().ToArray();
                     var normal = path[count - 1] - path[count - 2];
                     normal.Normalize();
                     for (int i = 0; i < normals.Length; ++i)
@@ -3869,7 +3898,7 @@ namespace HelixToolkit.Wpf
 
             var forward = path[1] - path[0];
             var right = sectionXAxis;
-            var up = SharedFunctions.CrossProduct(forward, right);
+            var up = SharedFunctions.CrossProduct(ref forward, ref right);
             up.Normalize();
             right.Normalize();
 
@@ -3889,10 +3918,10 @@ namespace HelixToolkit.Wpf
                 int i1 = i + 1 < pathLength ? i + 1 : i;
 
                 forward = path[i1] - path[i0];
-                right = SharedFunctions.CrossProduct(up, forward);
-                if (SharedFunctions.LengthSquared(right) > 1e-6f)
+                right = SharedFunctions.CrossProduct(ref up, ref forward);
+                if (SharedFunctions.LengthSquared(ref right) > 1e-6f)
                 {
-                    up = SharedFunctions.CrossProduct(forward, right);
+                    up = SharedFunctions.CrossProduct(ref forward, ref right);
                 }
 
                 up.Normalize();
@@ -3929,7 +3958,7 @@ namespace HelixToolkit.Wpf
                 var count = path.Count;
                 if (backCap)
                 {
-                    var circleBack = Positions.Skip(Positions.Count - section.Count).Take(section.Count).ToArray();
+                    var circleBack = Positions.Skip(Positions.Count - section.Count).Take(section.Count).Reverse().ToArray();
                     var normal = path[count - 1] - path[count - 2];
                     normal.Normalize();
                     for (int i = 0; i < normals.Length; ++i)
@@ -3972,6 +4001,7 @@ namespace HelixToolkit.Wpf
             this.Append(mesh.positions, mesh.triangleIndices, mesh.normals, mesh.textureCoordinates);
         }
 
+#if !NETFX_CORE
         /// <summary>
         /// Appends the specified mesh.
         /// </summary>
@@ -3987,6 +4017,8 @@ namespace HelixToolkit.Wpf
 
             this.Append(mesh.Positions, mesh.TriangleIndices, this.normals != null ? mesh.Normals : null, this.textureCoordinates != null ? mesh.TextureCoordinates : null);
         }
+#endif
+
         /// <summary>
         /// Appends the specified points and triangles.
         /// </summary>
@@ -4102,9 +4134,12 @@ namespace HelixToolkit.Wpf
                 var p0 = this.positions[this.triangleIndices[i0]];
                 var p1 = this.positions[this.triangleIndices[i1]];
                 var p2 = this.positions[this.triangleIndices[i2]];
-                var d0 = SharedFunctions.LengthSquared(p - p0);
-                var d1 = SharedFunctions.LengthSquared(p - p1);
-                var d2 = SharedFunctions.LengthSquared(p - p2);
+                var pp0 = p - p0;
+                var pp1 = p - p1;
+                var pp2 = p - p2;
+                var d0 = SharedFunctions.LengthSquared(ref pp0);
+                var d1 = SharedFunctions.LengthSquared(ref pp1);
+                var d2 = SharedFunctions.LengthSquared(ref pp2);
                 var mind = Math.Min(d0, Math.Min(d1, d2));
                 if (mind > eps)
                 {
@@ -4179,6 +4214,8 @@ namespace HelixToolkit.Wpf
 
             this.NoSharedVertices();
         }
+
+#if !NETFX_CORE
         /// <summary>
         /// Checks the performance limits.
         /// </summary>
@@ -4200,6 +4237,8 @@ namespace HelixToolkit.Wpf
                 Trace.WriteLine(string.Format("Too many triangle indices ({0}).", this.triangleIndices.Count));
             }
         }
+#endif
+
         /// <summary>
         /// Finds the average normal to the specified corner (experimental code).
         /// </summary>
@@ -4227,9 +4266,12 @@ namespace HelixToolkit.Wpf
                 var p2 = this.positions[this.triangleIndices[i2]];
 
                 // check if any of the vertices are on the corner
-                var d0 = SharedFunctions.LengthSquared(p - p0);
-                var d1 = SharedFunctions.LengthSquared(p - p1);
-                var d2 = SharedFunctions.LengthSquared(p - p2);
+                var pp0 = p - p0;
+                var pp1 = p - p1;
+                var pp2 = p - p2;
+                var d0 = SharedFunctions.LengthSquared(ref pp0);
+                var d1 = SharedFunctions.LengthSquared(ref pp1);
+                var d2 = SharedFunctions.LengthSquared(ref pp2);
                 var mind = Math.Min(d0, Math.Min(d1, d2));
                 if (mind > eps)
                 {
@@ -4237,7 +4279,9 @@ namespace HelixToolkit.Wpf
                 }
 
                 // calculate the triangle normal and check if this face is already added
-                var normal = SharedFunctions.CrossProduct(p1 - p0, p2 - p0);
+                var p10 = p1 - p0;
+                var p20 = p2 - p0;
+                var normal = SharedFunctions.CrossProduct(ref p10, ref p20);
                 normal.Normalize();
 
                 // todo: need to use the epsilon value to compare the normals?

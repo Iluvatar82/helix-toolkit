@@ -16,7 +16,7 @@ namespace HelixToolkit.Wpf.SharpDX.Helpers
         /// Stopwatch
         /// </summary>
         private static readonly Stopwatch watch = new Stopwatch();
-
+        public long lag { private set; get; } = 0;
         /// <summary>
         /// 
         /// </summary>
@@ -27,7 +27,7 @@ namespace HelixToolkit.Wpf.SharpDX.Helpers
         /// <summary>
         /// The threshold used to skip if previous event happened less than the threshold.
         /// </summary>
-        public long Threshold = 16;
+        public long Threshold = 15;
 
         /// <summary>
         /// Previous event happened.
@@ -40,13 +40,18 @@ namespace HelixToolkit.Wpf.SharpDX.Helpers
         /// <returns>If skip, return true. Otherwise, return false.</returns>
         public bool IsSkip()
         {
-            if (watch.ElapsedMilliseconds - previous < Threshold)
+            var curr = watch.ElapsedMilliseconds;
+            var elpased = curr - previous;
+            previous = curr;
+            lag += elpased;
+
+            if (lag < Threshold)
             {
                 return true;
             }
             else
             {
-                previous = watch.ElapsedMilliseconds;
+                lag = Math.Min(lag - Threshold, Threshold - 2);
                 return false;
             }
         }

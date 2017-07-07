@@ -6,25 +6,24 @@
 //   Provides helper methods for mesh geometries.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
-
+#if SHARPDX
+namespace HelixToolkit.Wpf.SharpDX
+#else
 namespace HelixToolkit.Wpf
+#endif
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Text;
 #if SHARPDX
-    using global::SharpDX;
-    
     using Vector3D = global::SharpDX.Vector3;
     using Point3D = global::SharpDX.Vector3;
-    
-    using Int32Collection = System.Collections.Generic.List<int>;
+    using Point = global::SharpDX.Vector2;
+    using Int32Collection = SharpDX.Core.IntCollection;
     using Vector3DCollection = SharpDX.Core.Vector3Collection;
     using Point3DCollection = SharpDX.Core.Vector3Collection;
     using PointCollection = SharpDX.Core.Vector2Collection;
-
-    using MeshGeometry3D = SharpDX.MeshGeometry3D;
-
     using DoubleOrSingle = System.Single;
 #else
     using System.Windows;
@@ -52,7 +51,7 @@ namespace HelixToolkit.Wpf
         /// <returns>
         /// Collection of normal vectors.
         /// </returns>
-        public static Vector3DCollection CalculateNormals(MeshGeometry3D mesh)
+        public static Vector3DCollection CalculateNormals(this MeshGeometry3D mesh)
         {
             return CalculateNormals(mesh.Positions, mesh.TriangleIndices);
         }
@@ -87,7 +86,7 @@ namespace HelixToolkit.Wpf
                 var p2 = positions[index2];
                 Vector3D u = p1 - p0;
                 Vector3D v = p2 - p0;
-                Vector3D w = SharedFunctions.CrossProduct(u, v);
+                Vector3D w = SharedFunctions.CrossProduct(ref u, ref v);
                 w.Normalize();
                 normals[index0] += w;
                 normals[index1] += w;
@@ -96,9 +95,7 @@ namespace HelixToolkit.Wpf
 
             for (int i = 0; i < normals.Count; i++)
             {
-                var w = normals[i];
-                w.Normalize();
-                normals[i] = w;
+                normals[i].Normalize();
             }
 
             return normals;
@@ -113,7 +110,7 @@ namespace HelixToolkit.Wpf
         /// <returns>
         /// The edge indices for the edges that are only used by one triangle.
         /// </returns>
-        public static Int32Collection FindBorderEdges(MeshGeometry3D mesh)
+        public static Int32Collection FindBorderEdges(this MeshGeometry3D mesh)
         {
             var dict = new Dictionary<ulong, int>();
 
@@ -163,7 +160,7 @@ namespace HelixToolkit.Wpf
         /// <returns>
         /// The edge indices (minimum index first).
         /// </returns>
-        public static Int32Collection FindEdges(MeshGeometry3D mesh)
+        public static Int32Collection FindEdges(this MeshGeometry3D mesh)
         {
             var edges = new Int32Collection();
             var dict = new HashSet<ulong>();
@@ -203,7 +200,7 @@ namespace HelixToolkit.Wpf
         /// <returns>
         /// The edge indices.
         /// </returns>
-        public static Int32Collection FindSharpEdges(MeshGeometry3D mesh, double minimumAngle)
+        public static Int32Collection FindSharpEdges(this MeshGeometry3D mesh, double minimumAngle)
         {
             var edgeIndices = new Int32Collection();
 
@@ -216,7 +213,9 @@ namespace HelixToolkit.Wpf
                 var p0 = mesh.Positions[mesh.TriangleIndices[i0]];
                 var p1 = mesh.Positions[mesh.TriangleIndices[i0 + 1]];
                 var p2 = mesh.Positions[mesh.TriangleIndices[i0 + 2]];
-                var n = SharedFunctions.CrossProduct(p1 - p0, p2 - p0);
+                var p10 = p1 - p0;
+                var p20 = p2 - p0;
+                var n = SharedFunctions.CrossProduct(ref p10, ref p20);
                 n.Normalize();
                 for (int j = 0; j < 3; j++)
                 {
@@ -230,7 +229,7 @@ namespace HelixToolkit.Wpf
                     {
                         var n2 = value;
                         n2.Normalize();
-                        var angle = 180 / (DoubleOrSingle)Math.PI * (DoubleOrSingle)Math.Acos(SharedFunctions.DotProduct(n, n2));
+                        var angle = 180 / (DoubleOrSingle)Math.PI * (DoubleOrSingle)Math.Acos(SharedFunctions.DotProduct(ref n, ref n2));
                         if (angle > minimumAngle)
                         {
                             edgeIndices.Add(minIndex);
@@ -256,7 +255,7 @@ namespace HelixToolkit.Wpf
         /// <returns>
         /// A new mesh.
         /// </returns>
-        public static MeshGeometry3D NoSharedVertices(MeshGeometry3D input)
+        public static MeshGeometry3D NoSharedVertices(this MeshGeometry3D input)
         {
             var p = new Point3DCollection();
             var ti = new Int32Collection();
@@ -323,7 +322,7 @@ namespace HelixToolkit.Wpf
         /// <returns>
         /// A simplified mesh.
         /// </returns>
-        public static MeshGeometry3D Simplify(MeshGeometry3D mesh, DoubleOrSingle eps)
+        public static MeshGeometry3D Simplify(this MeshGeometry3D mesh, DoubleOrSingle eps)
         {
             // Find common positions
             var dict = new Dictionary<int, int>(); // map position index to first occurence of same position
@@ -335,8 +334,8 @@ namespace HelixToolkit.Wpf
                     {
                         continue;
                     }
-
-                    var l2 = SharedFunctions.LengthSquared(mesh.Positions[i] - mesh.Positions[j]);
+                    var v = mesh.Positions[i] - mesh.Positions[j];
+                    var l2 = SharedFunctions.LengthSquared(ref v);
                     if (l2 < eps)
                     {
                         dict.Add(j, i);
@@ -377,7 +376,7 @@ namespace HelixToolkit.Wpf
         /// </summary>
         /// <param name="mesh">The mesh.</param>
         /// <returns>Validation report or null if no issues were found.</returns>
-        public static string Validate(MeshGeometry3D mesh)
+        public static string Validate(this MeshGeometry3D mesh)
         {
             var sb = new StringBuilder();
             if (mesh.Normals != null && mesh.Normals.Count != 0 && mesh.Normals.Count != mesh.Positions.Count)
@@ -409,7 +408,7 @@ namespace HelixToolkit.Wpf
             return sb.Length > 0 ? sb.ToString() : null;
         }
 
-#if !SHARPDX
+
         /// <summary>
         /// Cuts the mesh with the specified plane.
         /// </summary>
@@ -425,7 +424,7 @@ namespace HelixToolkit.Wpf
         /// <returns>
         /// The <see cref="MeshGeometry3D"/>.
         /// </returns>
-        public static MeshGeometry3D Cut(MeshGeometry3D mesh, Point3D plane, Vector3D normal)
+        public static MeshGeometry3D Cut(this MeshGeometry3D mesh, Point3D plane, Vector3D normal)
         {
             var hasTextureCoordinates = mesh.TextureCoordinates != null && mesh.TextureCoordinates.Count > 0;
             var hasNormals = mesh.Normals != null && mesh.Normals.Count > 0;
@@ -504,7 +503,7 @@ namespace HelixToolkit.Wpf
         /// <returns>
         /// The segments of the contour.
         /// </returns>
-        public static IList<Point3D> GetContourSegments(MeshGeometry3D mesh, Point3D plane, Vector3D normal)
+        public static IList<Point3D> GetContourSegments(this MeshGeometry3D mesh, Point3D plane, Vector3D normal)
         {
             var segments = new List<Point3D>();
             var contourHelper = new ContourHelper(plane, normal, mesh);
@@ -528,7 +527,7 @@ namespace HelixToolkit.Wpf
 
             return segments;
         }
-#endif
+
 
         /// <summary>
         /// Combines the segments.
@@ -676,7 +675,8 @@ namespace HelixToolkit.Wpf
             int result = -1;
             for (int i = 0; i < segments.Count; i++)
             {
-                var ls0 = SharedFunctions.LengthSquared(point - segments[i]);
+                var v = point - segments[i];
+                var ls0 = SharedFunctions.LengthSquared(ref v);
                 if (ls0 < best)
                 {
                     result = i;
@@ -685,6 +685,100 @@ namespace HelixToolkit.Wpf
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Remove isolated(not connected to any triangles) vertices
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <returns></returns>
+        public static MeshGeometry3D RemoveIsolatedVertices(this MeshGeometry3D mesh)
+        {
+            Point3DCollection vertNew;
+            Int32Collection triNew;
+            PointCollection textureNew;
+            Vector3DCollection normalNew;
+            RemoveIsolatedVertices(mesh.Positions, mesh.TriangleIndices, mesh.TextureCoordinates, mesh.Normals, out vertNew, out triNew, out textureNew, out normalNew);
+            var newMesh = new MeshGeometry3D() { Positions = vertNew, TriangleIndices = triNew, TextureCoordinates = textureNew, Normals = normalNew };
+            return newMesh;
+        }
+
+        /// <summary>
+        /// Remove isolated(not connected to any triangles) vertices
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <param name="triangles"></param>
+        /// <param name="texture"></param>
+        /// <param name="normals"></param>
+        /// <param name="verticesOut"></param>
+        /// <param name="trianglesOut"></param>
+        /// <param name="textureOut"></param>
+        /// <param name="normalOut"></param>
+        public static void RemoveIsolatedVertices(IList<Point3D> vertices, IList<int> triangles, IList<Point> texture, IList<Vector3D> normals,
+            out Point3DCollection verticesOut, out Int32Collection trianglesOut, out PointCollection textureOut, out Vector3DCollection normalOut)
+        {
+            verticesOut = null;
+            trianglesOut = null;
+            textureOut = null;
+            normalOut = null;
+            List<List<int>> tracking = new List<List<int>>(vertices.Count);
+            Debug.WriteLine(string.Format("NumVert:{0}; NumTriangle:{1};", vertices.Count, triangles.Count));
+            for (int i = 0; i < vertices.Count; ++i)
+            {
+                tracking.Add(new List<int>());
+            }
+            for (int i = 0; i < triangles.Count; ++i)
+            {
+                tracking[triangles[i]].Add(i);
+            }
+
+            List<int> vertToRemove = new List<int>(vertices.Count);
+            for (int i = 0; i < vertices.Count; ++i)
+            {
+                if (tracking[i].Count == 0)
+                {
+                    vertToRemove.Add(i);
+                }
+            }
+            verticesOut = new Point3DCollection(vertices.Count - vertToRemove.Count);
+            trianglesOut = new Int32Collection(triangles);
+            if (texture != null)
+            {
+                textureOut = new PointCollection(vertices.Count - vertToRemove.Count);
+            }
+            if (normals != null)
+            {
+                normalOut = new Vector3DCollection(vertices.Count - vertToRemove.Count);
+            }
+            if (vertices.Count == vertToRemove.Count)
+            {
+                return;
+            }
+            int counter = 0;
+            for (int i = 0; i < vertices.Count; ++i)
+            {
+                if (counter == vertToRemove.Count || i < vertToRemove[counter])
+                {
+                    verticesOut.Add(vertices[i]);
+                    if (texture != null)
+                    {
+                        textureOut.Add(texture[i]);
+                    }
+                    if (normals != null)
+                    {
+                        normalOut.Add(normals[i]);
+                    }
+                    foreach (var t in tracking[i])
+                    {
+                        trianglesOut[t] -= counter;
+                    }
+                }
+                else
+                {
+                    ++counter;
+                }
+            }
+            Debug.WriteLine(string.Format("Remesh finished. Output NumVert:{0};", verticesOut.Count));
         }
     }
 }
