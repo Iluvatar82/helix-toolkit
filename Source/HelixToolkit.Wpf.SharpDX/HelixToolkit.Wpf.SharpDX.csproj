@@ -198,6 +198,13 @@
     <Compile Include="Model\Geometry\BillboardSingleImage3D.cs" />
     <Compile Include="Model\Geometry\BillboardSingleText3D.cs" />
     <Compile Include="Model\Geometry\BillboardText3D.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\Edge.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\Face.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\HalfEdge.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\Mesh.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\MeshCollections.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\Traits.cs" />
+    <Compile Include="Model\Geometry\HalfEdge\Vertex.cs" />
     <Compile Include="Model\Geometry\PointGeometry3D.cs" />
     <Compile Include="Model\Lights3D\Light3DSceneShared.cs" />
     <Compile Include="Properties\AssemblyDescription.cs" />

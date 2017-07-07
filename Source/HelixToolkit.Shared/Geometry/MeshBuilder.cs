@@ -1038,6 +1038,143 @@ namespace HelixToolkit.Wpf
             }
         }
         /// <summary>
+        /// Adds a Cube that's Faces share the generated Points.
+        /// </summary>
+        /// <param name="center">The Center of the Cube.</param>
+        /// <param name="up">The Up-Vector.</param>
+        /// <param name="front">The Front-Vector.</param>
+        /// <param name="size">The Size of the Cube.</param>
+        /// <param name="faces">The CubeFaces to generate.</param>
+        public void AddClosedCube(Point3D center, Vector3D up, Vector3D front, double size = 1.0, BoxFaces faces = BoxFaces.All)
+        {
+            // Make sure the Vectors are normalized and create a caresian Coordinate-System
+            up.Normalize();
+            front.Normalize();
+            var right = SharedFunctions.CrossProduct(front, up);
+            front = SharedFunctions.CrossProduct(up, right);
+            var startCount = this.positions.Count;
+            // Add Points
+            this.positions.Add(Point3D.Add(center, -up * 0.5f - right * 0.5f - front * 0.5f));
+            this.positions.Add(Point3D.Add(center, -up * 0.5f - right * 0.5f + front * 0.5f));
+            this.positions.Add(Point3D.Add(center, -up * 0.5f + right * 0.5f + front * 0.5f));
+            this.positions.Add(Point3D.Add(center, -up * 0.5f + right * 0.5f - front * 0.5f));
+            this.positions.Add(Point3D.Add(center, up * 0.5f - right * 0.5f - front * 0.5f));
+            this.positions.Add(Point3D.Add(center, up * 0.5f - right * 0.5f + front * 0.5f));
+            this.positions.Add(Point3D.Add(center, up * 0.5f + right * 0.5f + front * 0.5f));
+            this.positions.Add(Point3D.Add(center, up * 0.5f + right * 0.5f - front * 0.5f));
+
+            // Add Normals
+            if (this.normals != null)
+            {
+                var normal = -up - right - front;
+                normal.Normalize();
+                this.normals.Add(normal);
+                normal = -up - right + front;
+                normal.Normalize();
+                this.normals.Add(normal);
+                normal = -up + right + front;
+                normal.Normalize();
+                this.normals.Add(normal);
+                normal = -up + right - front;
+                normal.Normalize();
+                this.normals.Add(normal);
+                normal = up - right - front;
+                normal.Normalize();
+                this.normals.Add(normal);
+                normal = up - right + front;
+                normal.Normalize();
+                this.normals.Add(normal);
+                normal = up + right + front;
+                normal.Normalize();
+                this.normals.Add(normal);
+                normal = up + right - front;
+                normal.Normalize();
+                this.normals.Add(normal);
+            }
+
+            // Add TextureCoordinates
+            if (this.textureCoordinates != null)
+            {
+                this.textureCoordinates.Add(new Point(0, 0));
+                this.textureCoordinates.Add(new Point(1, 0));
+                this.textureCoordinates.Add(new Point(1, 1));
+                this.textureCoordinates.Add(new Point(0, 1));
+                this.textureCoordinates.Add(new Point(1, 1));
+                this.textureCoordinates.Add(new Point(0, 1));
+                this.textureCoordinates.Add(new Point(0, 0));
+                this.textureCoordinates.Add(new Point(1, 0));
+
+            }
+
+            // Add TriangleIndices
+            // Bottom Side
+            if (faces.HasFlag(BoxFaces.Bottom))
+            {
+                this.triangleIndices.Add(startCount + 0);
+                this.triangleIndices.Add(startCount + 1);
+                this.triangleIndices.Add(startCount + 2);
+                this.triangleIndices.Add(startCount + 0);
+                this.triangleIndices.Add(startCount + 2);
+                this.triangleIndices.Add(startCount + 3);
+            }
+            // Top Side
+            if (faces.HasFlag(BoxFaces.Top)) {
+                this.triangleIndices.Add(startCount + 4);
+                this.triangleIndices.Add(startCount + 6);
+                this.triangleIndices.Add(startCount + 5);
+                this.triangleIndices.Add(startCount + 4);
+                this.triangleIndices.Add(startCount + 7);
+                this.triangleIndices.Add(startCount + 6);
+            }
+            // Back Side
+            if (faces.HasFlag(BoxFaces.Back))
+            {
+                this.triangleIndices.Add(startCount + 0);
+                this.triangleIndices.Add(startCount + 7);
+                this.triangleIndices.Add(startCount + 4);
+                this.triangleIndices.Add(startCount + 0);
+                this.triangleIndices.Add(startCount + 3);
+                this.triangleIndices.Add(startCount + 7);
+            }
+            // Front Side
+            if (faces.HasFlag(BoxFaces.Front))
+            {
+                this.triangleIndices.Add(startCount + 1);
+                this.triangleIndices.Add(startCount + 5);
+                this.triangleIndices.Add(startCount + 6);
+                this.triangleIndices.Add(startCount + 1);
+                this.triangleIndices.Add(startCount + 6);
+                this.triangleIndices.Add(startCount + 2);
+            }
+            // Left Side
+            if (faces.HasFlag(BoxFaces.Left))
+            {
+                this.triangleIndices.Add(startCount + 0);
+                this.triangleIndices.Add(startCount + 4);
+                this.triangleIndices.Add(startCount + 1);
+                this.triangleIndices.Add(startCount + 4);
+                this.triangleIndices.Add(startCount + 5);
+                this.triangleIndices.Add(startCount + 1);
+            }
+            // Right Side
+            if (faces.HasFlag(BoxFaces.Right))
+            {
+                this.triangleIndices.Add(startCount + 3);
+                this.triangleIndices.Add(startCount + 2);
+                this.triangleIndices.Add(startCount + 7);
+                this.triangleIndices.Add(startCount + 2);
+                this.triangleIndices.Add(startCount + 6);
+                this.triangleIndices.Add(startCount + 7);
+            }
+        }
+        /// <summary>
+        /// Adds a complete closed Cube with a Sidelength of 1 and the Center in the Origin.
+        /// </summary>
+        public void AddClosedCube()
+        {
+            AddClosedCube(new Point3D(), new Vector3D(0, 0, 1), new Vector3D(0, 1, 0), 1, BoxFaces.All);
+        }
+        /// <summary>
         /// Adds a cylinder to the mesh.
         /// </summary>
         /// <param name="p1">
@@ -3844,7 +3981,7 @@ namespace HelixToolkit.Wpf
                 }
             }
         }
-        #endregion Add Geometry
+#endregion Add Geometry
 
 
         #region Helper Functions

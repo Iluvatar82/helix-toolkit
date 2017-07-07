@@ -1,0 +1,22 @@
+﻿<Window x:Class="HalfEdgeMeshDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:hx="http://helix-toolkit.org/wpf/SharpDX"
+        xmlns:local="clr-namespace:HalfEdgeMeshDemo"
+        Title="MainWindow" Height="600" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <hx:Viewport3DX x:Name="viewport3D" Grid.Column="0" Grid.Row="0" Camera="{Binding Camera}">
+            <hx:AmbientLight3D Color="{Binding AmbientLightColor}"/>
+            <hx:DirectionalLight3D Color="{Binding DirectionalLightColor}" Direction="{Binding DirectionalLightDirection}"/>
+            <hx:DirectionalLight3D Color="{Binding DirectionalLightColor}" Direction="{Binding DirectionalLight2Direction}"/>
+            <hx:DirectionalLight3D Color="{Binding DirectionalLightColor}" Direction="{Binding DirectionalLight3Direction}"/>
+            <hx:LineGeometryModel3D x:Name="grid" Geometry="{Binding Grid}" Transform="{Binding GridTransform}" Color="{Binding GridColor}" Thickness="{Binding LineThickness}"/>
+            <hx:MeshGeometryModel3D x:Name="baseMesh" Transform="{Binding ModelTransform}" Material="{Binding Material}"></hx:MeshGeometryModel3D>
+            <hx:LineGeometryModel3D x:Name="baseMeshBoundaries" Transform="{Binding ModelTransform}" Color="{Binding BoundaryColor}" Thickness="{Binding TriangulationThickness}"></hx:LineGeometryModel3D>
+        </hx:Viewport3DX>
+    </Grid>
+</Window>

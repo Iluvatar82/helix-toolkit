@@ -60,6 +60,18 @@ namespace PolygonTriangulationDemo
                         lineTriangulatedPolygon.Geometry = null;
                     }
                 }
+                else if (e.PropertyName == "ShowBoundaries")
+                {
+                    if (mViewModel.ShowBoundaries)
+                    {
+                        boundaryLines.Geometry = mViewModel.BoundaryGeometry;
+                    }
+                    else
+                    {
+                        boundaryLines.Geometry = null;
+                    }
+                }
+
             });
         }
 
@@ -141,6 +153,9 @@ namespace PolygonTriangulationDemo
             geometry.Indices = new HelixToolkit.Wpf.SharpDX.Core.IntCollection(sLTI);
             triangulatedPolygon.Geometry = geometry;
 
+            var polyHE = new Mesh(geometry);
+            mViewModel.BoundaryGeometry = polyHE.GetBoundaryGeometry();
+
             var lb = new LineBuilder();
             for (int i = 0; i < sLTI.Count; i += 3)
             {
@@ -149,7 +164,7 @@ namespace PolygonTriangulationDemo
                 lb.AddLine(geometry.Positions[sLTI[i + 2]], geometry.Positions[sLTI[i]]);
             }
             mViewModel.LineGeometry  = lb.ToLineGeometry3D();
-            
+
             // Set the Lines if activated
             if (mViewModel.ShowTriangleLines)
             {
@@ -159,7 +174,16 @@ namespace PolygonTriangulationDemo
             {
                 lineTriangulatedPolygon.Geometry = null;
             }
-            
+            // Set the Lines if activated
+            if (mViewModel.ShowBoundaries)
+            {
+                boundaryLines.Geometry = mViewModel.BoundaryGeometry;
+            }
+            else
+            {
+                boundaryLines.Geometry = null;
+            }
+
             // Set the InfoLabel Text
             var timeNeeded = (after - before).TotalMilliseconds;
             infoLabel.Content = String.Format("Last triangulation of {0} Points took {1:0.##} Milliseconds!", triangulatedPolygon.Geometry.Positions.Count, timeNeeded);
