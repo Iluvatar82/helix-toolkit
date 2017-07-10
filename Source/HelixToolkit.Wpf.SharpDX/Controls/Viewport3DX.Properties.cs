@@ -300,7 +300,10 @@ namespace HelixToolkit.Wpf.SharpDX
         /// The render host property.
         /// </summary>
         public static DependencyProperty RenderHostProperty = DependencyProperty.Register(
-            "RenderHost", typeof(IRenderHost), typeof(Viewport3DX), new FrameworkPropertyMetadata(null));
+            "RenderHost", typeof(IRenderHost), typeof(Viewport3DX), new PropertyMetadata(null, (d, e) =>
+            {
+                (d as Viewport3DX).renderHostInternal = e.NewValue as IRenderHost;
+            }));
 
         /// <summary>
         /// The Render Technique property
@@ -308,14 +311,6 @@ namespace HelixToolkit.Wpf.SharpDX
         public static readonly DependencyProperty RenderTechniqueProperty = DependencyProperty.Register(
             "RenderTechnique", typeof(RenderTechnique), typeof(Viewport3DX), new PropertyMetadata(null,
                 (s, e) => ((Viewport3DX)s).RenderTechniquePropertyChanged()));
-
-        /// <summary>
-        /// The RenderTechniquesManager property.
-        /// </summary>
-        public static readonly DependencyProperty RenderTechniquesManagerProperty = DependencyProperty.Register(
-            "RenderTechniquesManager", typeof(IRenderTechniquesManager), typeof(Viewport3DX), new FrameworkPropertyMetadata(
-                null, FrameworkPropertyMetadataOptions.AffectsRender,
-                (s, e) => ((Viewport3DX)s).RenderTechniquesManagerPropertyChanged()));
 
         ///// <summary>
         ///// The is deferred shading enabled propery
@@ -1415,6 +1410,7 @@ namespace HelixToolkit.Wpf.SharpDX
             set { this.SetValue(RenderHostProperty, value); }
         }
 
+        protected IRenderHost renderHostInternal { private set; get; }
         /// <summary>
         /// Gets or sets value for the shading model shading is used
         /// </summary>
@@ -1425,15 +1421,6 @@ namespace HelixToolkit.Wpf.SharpDX
         {
             get { return (RenderTechnique)this.GetValue(RenderTechniqueProperty); }
             set { this.SetValue(RenderTechniqueProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the <see cref="IRenderTechniquesManager"/>.
-        /// </summary>
-        public IRenderTechniquesManager RenderTechniquesManager
-        {
-            get { return (IRenderTechniquesManager)GetValue(RenderTechniquesManagerProperty); }
-            set { SetValue(RenderTechniquesManagerProperty, value); }
         }
 
         ///// <summary>
@@ -2686,5 +2673,7 @@ namespace HelixToolkit.Wpf.SharpDX
                 return (IModelContainer)GetValue(SharedModelContainerProperty);
             }
         }
+
+        protected IModelContainer sharedModelContainerInternal { private set; get; } = null;
     }
 }

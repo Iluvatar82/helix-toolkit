@@ -138,6 +138,13 @@ DepthStencilState DSSDepthParticle
     DepthWriteMask = Zero;
 };
 
+DepthStencilState DSSDepthXRay
+{
+	DepthEnable = true;
+    DepthWriteMask = Zero;
+    DepthFunc = Greater;
+};
+
 //--------------------------------------------------------------------------------------
 BlendState BSNoBlending
 {
@@ -158,6 +165,18 @@ BlendState BSBlending
 };
 
 BlendState BSParticleBlending
+{
+    BlendEnable[0] = true;
+	SrcBlend = ONE;
+	DestBlend = ONE;
+    BlendOp = ADD;
+    SrcBlendAlpha = ONE;
+    DestBlendAlpha = ZERO;
+    BlendOpAlpha = ADD;
+    RenderTargetWriteMask[0] = 0x0F;
+};
+
+BlendState BSXRayBlending
 {
     BlendEnable[0] = true;
 	SrcBlend = ONE;
@@ -211,5 +230,21 @@ float4 windowToProj(in float2 pos, in float z, in float w)
     return float4(((pos.x * 2.0 / vViewport.x) - 1.0) * w,
                   ((pos.y * 2.0 / vViewport.y) - 1.0) * -w,
                   z, w);
+}
+
+int whengt(float l, float cmp) {
+	return max(sign(l - cmp), 0);
+}
+
+int whenlt(float l, float cmp) {
+	return max(sign(cmp - l), 0);
+}
+
+int whenge(float l, float cmp) {
+	return 1 - whenlt(l, cmp);
+}
+
+int whenle(float l, float cmp) {
+	return 1 - whengt(l, cmp);
 }
 #endif

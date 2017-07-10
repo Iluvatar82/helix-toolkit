@@ -13,15 +13,84 @@
 
     using Color = global::SharpDX.Color;
     using System.Runtime.CompilerServices;
+    using System;
 
     public class PointGeometryModel3D : GeometryModel3D
     {
+        #region Dependency Properties
+        public static readonly DependencyProperty ColorProperty =
+            DependencyProperty.Register("Color", typeof(Color), typeof(PointGeometryModel3D),
+                new AffectsRenderPropertyMetadata(Color.Black, (o, e) => ((PointGeometryModel3D)o).OnColorChanged()));
+
+        public static readonly DependencyProperty SizeProperty =
+            DependencyProperty.Register("Size", typeof(Size), typeof(PointGeometryModel3D), new AffectsRenderPropertyMetadata(new Size(1.0, 1.0),
+                (d,e)=> 
+                {
+                    var size = (Size)e.NewValue;
+                    var model = (d as PointGeometryModel3D);
+                    model.pointParams.X = (float)size.Width;
+                    model.pointParams.Y = (float)size.Height;
+                }));
+
+        public static readonly DependencyProperty FigureProperty =
+            DependencyProperty.Register("Figure", typeof(PointFigure), typeof(PointGeometryModel3D), new AffectsRenderPropertyMetadata(PointFigure.Rect,
+                (d, e)=> 
+                {
+                    var figure = (PointFigure)e.NewValue;
+                    var model = (d as PointGeometryModel3D);
+                    model.pointParams.Z = (float)figure;
+                }));
+
+        public static readonly DependencyProperty FigureRatioProperty =
+            DependencyProperty.Register("FigureRatio", typeof(double), typeof(PointGeometryModel3D), new AffectsRenderPropertyMetadata(0.25,
+                (d, e)=> 
+                {
+                    var ratio = (double)e.NewValue;
+                    var model = (d as PointGeometryModel3D);
+                    model.pointParams.W = (float)ratio;
+                }));
+
+        public static readonly DependencyProperty HitTestThicknessProperty =
+            DependencyProperty.Register("HitTestThickness", typeof(double), typeof(PointGeometryModel3D), new UIPropertyMetadata(4.0));
+
+        [TypeConverter(typeof(ColorConverter))]
+        public Color Color
+        {
+            get { return (Color)this.GetValue(ColorProperty); }
+            set { this.SetValue(ColorProperty, value); }
+        }
+
+        public Size Size
+        {
+            get { return (Size)this.GetValue(SizeProperty); }
+            set { this.SetValue(SizeProperty, value); }
+        }
+
+        public PointFigure Figure
+        {
+            get { return (PointFigure)this.GetValue(FigureProperty); }
+            set { this.SetValue(FigureProperty, value); }
+        }
+
+        public double FigureRatio
+        {
+            get { return (double)this.GetValue(FigureRatioProperty); }
+            set { this.SetValue(FigureRatioProperty, value); }
+        }
+
+        public double HitTestThickness
+        {
+            get { return (double)this.GetValue(HitTestThicknessProperty); }
+            set { this.SetValue(HitTestThicknessProperty, value); }
+        }
+        #endregion
         private PointsVertex[] vertexArrayBuffer;
         protected InputLayout vertexLayout;
         protected EffectTechnique effectTechnique;
         protected EffectTransformVariables effectTransforms;
         protected EffectVectorVariable vPointParams;
         private readonly ImmutableBufferProxy<PointsVertex> vertexBuffer = new ImmutableBufferProxy<PointsVertex>(PointsVertex.SizeInBytes, BindFlags.VertexBuffer);
+        protected Vector4 pointParams = new Vector4();
         /// <summary>
         /// For subclass override
         /// </summary>
@@ -33,52 +102,15 @@
             }
         }
 
-        [TypeConverter(typeof(ColorConverter))]
-        public Color Color
+
+
+        public PointGeometryModel3D() : base()
         {
-            get { return (Color)this.GetValue(ColorProperty); }
-            set { this.SetValue(ColorProperty, value); }
+            pointParams.X = (float)Size.Width;
+            pointParams.Y = (float)Size.Height;
+            pointParams.Z = (float)Figure;
+            pointParams.W = (float)FigureRatio;
         }
-
-        public static readonly DependencyProperty ColorProperty =
-            DependencyProperty.Register("Color", typeof(Color), typeof(PointGeometryModel3D),
-                new AffectsRenderPropertyMetadata(Color.Black, (o, e) => ((PointGeometryModel3D)o).OnColorChanged()));
-
-        public Size Size
-        {
-            get { return (Size)this.GetValue(SizeProperty); }
-            set { this.SetValue(SizeProperty, value); }
-        }
-
-        public static readonly DependencyProperty SizeProperty =
-            DependencyProperty.Register("Size", typeof(Size), typeof(PointGeometryModel3D), new AffectsRenderPropertyMetadata(new Size(1.0, 1.0)));
-
-        public PointFigure Figure
-        {
-            get { return (PointFigure)this.GetValue(FigureProperty); }
-            set { this.SetValue(FigureProperty, value); }
-        }
-
-        public static readonly DependencyProperty FigureProperty =
-            DependencyProperty.Register("Figure", typeof(PointFigure), typeof(PointGeometryModel3D), new AffectsRenderPropertyMetadata(PointFigure.Rect));
-
-        public double FigureRatio
-        {
-            get { return (double)this.GetValue(FigureRatioProperty); }
-            set { this.SetValue(FigureRatioProperty, value); }
-        }
-
-        public static readonly DependencyProperty FigureRatioProperty =
-            DependencyProperty.Register("FigureRatio", typeof(double), typeof(PointGeometryModel3D), new AffectsRenderPropertyMetadata(0.25));
-
-        public double HitTestThickness
-        {
-            get { return (double)this.GetValue(HitTestThicknessProperty); }
-            set { this.SetValue(HitTestThicknessProperty, value); }
-        }
-
-        public static readonly DependencyProperty HitTestThicknessProperty =
-            DependencyProperty.Register("HitTestThickness", typeof(double), typeof(PointGeometryModel3D), new UIPropertyMetadata(4.0));
 
         public static double DistanceRayToPoint(Ray r, Vector3 p)
         {
@@ -95,7 +127,7 @@
 
         protected override bool CanHitTest(IRenderMatrices context)
         {
-            return base.CanHitTest(context) && geometryInternal.Positions != null && geometryInternal.Positions.Count > 0 && geometryInternal is PointGeometry3D && context != null;
+            return base.CanHitTest(context) && context != null;
         }
 
         /// <summary>
@@ -193,6 +225,11 @@
                 CreateVertexBuffer();
         }
 
+        protected override void OnCreateGeometryBuffers()
+        {
+            CreateVertexBuffer();
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateVertexBuffer()
         {
@@ -203,6 +240,7 @@
                 var data = CreateVertexArray();
                 vertexBuffer.CreateBufferFromDataArray(this.Device, data);
             }
+            InvalidateRender();
         }
 
         protected override void OnGeometryPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -210,25 +248,12 @@
             base.OnGeometryPropertyChanged(sender, e);
             if (sender is PointGeometry3D)
             {
-                if (e.PropertyName.Equals(nameof(PointGeometry3D.Positions)))
+                if (e.PropertyName.Equals(nameof(PointGeometry3D.Positions)) || e.PropertyName.Equals(nameof(PointGeometry3D.Colors))
+                    || e.PropertyName.Equals(Geometry3D.VertexBuffer))
                 {
-                    OnUpdateVertexBuffer(CreateVertexArray);
-                }
-                else if (e.PropertyName.Equals(nameof(PointGeometry3D.Colors)))
-                {
-                    OnUpdateVertexBuffer(CreateVertexArray);
-                }
-                else if (e.PropertyName.Equals(Geometry3D.VertexBuffer))
-                {
-                    OnUpdateVertexBuffer(CreateVertexArray);
+                    CreateVertexBuffer();
                 }
             }
-        }
-
-        private void OnUpdateVertexBuffer(System.Func<PointsVertex[]> updateFunction)
-        {
-            updateFunction.Invoke();
-            this.InvalidateRender();
         }
 
         protected override RenderTechnique SetRenderTechnique(IRenderHost host)
@@ -238,14 +263,7 @@
 
         protected override bool CheckGeometry()
         {
-            if (this.geometryInternal == null || this.geometryInternal.Positions == null || this.geometryInternal.Positions.Count == 0)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return geometryInternal is PointGeometry3D && this.geometryInternal != null && this.geometryInternal.Positions != null && this.geometryInternal.Positions.Count > 0;
         }
         /// <summary>
         /// 
@@ -267,7 +285,7 @@
 
             effectTransforms = new EffectTransformVariables(effect);
 
-            CreateVertexBuffer();
+            OnCreateGeometryBuffers();
 
             // --- set up const variables
             vPointParams = effect.GetVariableByName("vPointParams").AsVector();
@@ -317,7 +335,6 @@
             this.effectTransforms.mWorld.SetMatrix(ref worldMatrix);
 
             // --- set effect per object const vars
-            var pointParams = new Vector4((float)this.Size.Width, (float)this.Size.Height, (float)this.Figure, (float)this.FigureRatio);
             this.vPointParams.Set(pointParams);
 
             // --- set context

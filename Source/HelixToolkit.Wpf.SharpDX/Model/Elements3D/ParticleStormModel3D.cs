@@ -704,6 +704,7 @@ namespace HelixToolkit.Wpf.SharpDX
             effectTechnique = effect.GetTechniqueByName(this.renderTechnique.Name);
             bHasTextureVar = effect.GetVariableByName("bHasDiffuseMap").AsScalar();
             textureViewVar = effect.GetVariableByName("texDiffuseMap").AsShaderResource();
+            isBlendChanged = true;
             System.Windows.Media.CompositionTarget.Rendering += CompositionTarget_Rendering;
             return true;
         }
@@ -731,6 +732,7 @@ namespace HelixToolkit.Wpf.SharpDX
             Disposer.RemoveAndDispose(ref bHasTextureVar);
             Disposer.RemoveAndDispose(ref textureViewVar);
             Disposer.RemoveAndDispose(ref blendState);
+            Disposer.RemoveAndDispose(ref textureView);
             DisposeBuffers();
             base.OnDetach();
         }

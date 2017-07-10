@@ -71,9 +71,9 @@
             <hx:GroupModel3D Transform="{StaticResource Model2Transform}">
                 <hx:MeshGeometryModel3D Geometry="{StaticResource Model}" Material="{x:Static hx:PhongMaterials.Green}"/>
             </hx:GroupModel3D>
-            <hx:CompositeModel3D Transform="{StaticResource Model3Transform}">
+            <hx:GroupModel3D Transform="{StaticResource Model3Transform}">
                 <hx:MeshGeometryModel3D Geometry="{StaticResource Model}" Material="{x:Static hx:PhongMaterials.Blue}"/>
-            </hx:CompositeModel3D>
+            </hx:GroupModel3D>
             <hx:GroupModel3D Transform="{StaticResource Model2Transform}">
                 <hx:CompositeModel3D Transform="{StaticResource Model3Transform}">
                     <hx:LineGeometryModel3D Geometry="{StaticResource Lines}" Transform="{StaticResource Model1Transform}" Color="{x:Static sdxm:Color.Black}" Thickness="1.5"/>

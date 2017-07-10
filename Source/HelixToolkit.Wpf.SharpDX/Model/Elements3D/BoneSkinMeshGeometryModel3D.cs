@@ -113,7 +113,7 @@ namespace HelixToolkit.Wpf.SharpDX
             // --- check shadowmaps
             this.hasShadowMap = this.renderHost.IsShadowMapEnabled;
             this.effectMaterial.bHasShadowMapVariable.Set(this.hasShadowMap);
-            this.effectMaterial.AttachMaterial();
+            this.effectMaterial.AttachMaterial(geometryInternal as MeshGeometry3D);
             // --- set context
             renderContext.DeviceContext.InputAssembler.InputLayout = this.vertexLayout;
             renderContext.DeviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
@@ -146,22 +146,13 @@ namespace HelixToolkit.Wpf.SharpDX
                     this.isInstanceChanged = false;
                 }
                 renderContext.DeviceContext.InputAssembler.SetVertexBuffers(2, new VertexBufferBinding(this.InstanceBuffer.Buffer, this.InstanceBuffer.StructureSize, 0));
-                // --- render the geometry
-                this.effectTechnique.GetPassByIndex(0).Apply(renderContext.DeviceContext);
-                // --- draw              
-                renderContext.DeviceContext.DrawIndexedInstanced(this.geometryInternal.Indices.Count, this.instanceInternal.Count, 0, 0, 0);
-                this.bHasInstances.Set(false);
+                OnInstancedDrawCall(renderContext);
             }
             else
             {
                 // --- bind buffer                
                 renderContext.DeviceContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(this.VertexBuffer.Buffer, this.VertexBuffer.StructureSize, 0));
-                // --- render the geometry
-                // 
-                var pass = this.effectTechnique.GetPassByIndex(0);
-                pass.Apply(renderContext.DeviceContext);
-                // --- draw
-                renderContext.DeviceContext.DrawIndexed(this.geometryInternal.Indices.Count, 0, 0);
+                OnDrawCall(renderContext);
             }
         }
 

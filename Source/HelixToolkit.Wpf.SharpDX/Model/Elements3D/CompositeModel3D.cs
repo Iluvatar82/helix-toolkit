@@ -12,8 +12,9 @@ namespace HelixToolkit.Wpf.SharpDX
     using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.Windows.Markup;
-
+    using System.Linq;
     using global::SharpDX;
+    using System;
 
     /// <summary>
     ///     Represents a composite Model3D.
@@ -76,51 +77,9 @@ namespace HelixToolkit.Wpf.SharpDX
             base.OnDetach();
         }
 
-        /// <summary>
-        /// Compute hit-testing for all children
-        /// </summary>
-        protected override bool OnHitTest(IRenderMatrices context, Ray ray, ref List<HitTestResult> hits)
-        {
-            bool hit = false;
-
-            foreach (var c in this.Children)
-            {
-                var hc = c as IHitable;
-                if (hc != null)
-                {
-                    var tc = c as ITransformable;
-                    if (tc != null)
-                    {
-                        tc.PushMatrix(this.modelMatrix);
-                        if (hc.HitTest(context, ray, ref hits))
-                        {
-                            hit = true;
-                        }
-                        tc.PopMatrix();
-                    }
-                    else
-                    {
-                        if (hc.HitTest(context, ray, ref hits))
-                        {
-                            hit = true;
-                        }
-                    }
-                }
-            }
-            return hit;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override void Dispose()
-        {
-            this.Detach();
-        }
-
         protected override bool CanRender(RenderContext context)
         {
-            return IsRendering && Visibility == System.Windows.Visibility.Visible;
+            return IsAttached && isRenderingInternal && visibleInternal;
         }
         /// <summary>
         /// Renders the specified context.
@@ -228,6 +187,57 @@ namespace HelixToolkit.Wpf.SharpDX
                 }
             }
             this.Bounds = bb;
+        }
+
+        protected override bool CanHitTest(IRenderMatrices context)
+        {
+            return IsAttached && visibleInternal && isRenderingInternal && isHitTestVisibleInternal;
+        }
+
+        protected override bool CheckGeometry()
+        {
+            return true;
+        }
+        /// <summary>
+        /// Compute hit-testing for all children
+        /// </summary>
+        protected override bool OnHitTest(IRenderMatrices context, Ray ray, ref List<HitTestResult> hits)
+        {
+            bool hit = false;
+            foreach (var c in this.Children)
+            {
+                var hc = c as IHitable;
+                if (hc != null)
+                {
+                    var tc = c as ITransformable;
+                    if (tc != null)
+                    {
+                        tc.PushMatrix(this.modelMatrix);
+                        if (hc.HitTest(context, ray, ref hits))
+                        {
+                            hit = true;
+                        }
+                        tc.PopMatrix();
+                    }
+                    else
+                    {
+                        if (hc.HitTest(context, ray, ref hits))
+                        {
+                            hit = true;
+                        }
+                    }
+                }
+            }
+            if (hit)
+            {
+                hits = hits.OrderBy(x => Vector3.DistanceSquared(ray.Position, x.PointHit.ToVector3())).ToList();
+            }
+            return hit;
+        }
+
+        protected override void OnCreateGeometryBuffers()
+        {
+            
         }
     }
 }

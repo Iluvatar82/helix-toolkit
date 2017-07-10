@@ -33,10 +33,61 @@ namespace HelixToolkit.Wpf.SharpDX
 
     public class LineGeometryModel3D : InstanceGeometryModel3D
     {
+        #region Dependency Properties
+        public static readonly DependencyProperty ColorProperty =
+            DependencyProperty.Register("Color", typeof(Color), typeof(LineGeometryModel3D), new AffectsRenderPropertyMetadata(Color.Black, (o, e) => ((LineGeometryModel3D)o).OnColorChanged()));
+
+        public static readonly DependencyProperty ThicknessProperty =
+            DependencyProperty.Register("Thickness", typeof(double), typeof(LineGeometryModel3D), new AffectsRenderPropertyMetadata(1.0, (d, e) =>
+            {
+                (d as LineGeometryModel3D).lineParams.X = (float)(double)e.NewValue;
+            }));
+
+        public static readonly DependencyProperty SmoothnessProperty =
+            DependencyProperty.Register("Smoothness", typeof(double), typeof(LineGeometryModel3D), new AffectsRenderPropertyMetadata(0.0,
+                (d, e) =>
+                {
+                    (d as LineGeometryModel3D).lineParams.Y = (float)(double)e.NewValue;
+                }));
+
+        public static readonly DependencyProperty HitTestThicknessProperty =
+            DependencyProperty.Register("HitTestThickness", typeof(double), typeof(LineGeometryModel3D), new UIPropertyMetadata(1.0));
+
+        [TypeConverter(typeof(ColorConverter))]
+        public Color Color
+        {
+            get { return (Color)this.GetValue(ColorProperty); }
+            set { this.SetValue(ColorProperty, value); }
+        }
+
+        public double Thickness
+        {
+            get { return (double)this.GetValue(ThicknessProperty); }
+            set { this.SetValue(ThicknessProperty, value); }
+        }
+
+
+        public double Smoothness
+        {
+            get { return (double)this.GetValue(SmoothnessProperty); }
+            set { this.SetValue(SmoothnessProperty, value); }
+        }
+
+        public double HitTestThickness
+        {
+            get { return (double)this.GetValue(HitTestThicknessProperty); }
+            set { this.SetValue(HitTestThicknessProperty, value); }
+        }
+        #endregion
         private LinesVertex[] vertexArrayBuffer = null;
         protected InputLayout vertexLayout;
         private readonly ImmutableBufferProxy<LinesVertex> vertexBuffer = new ImmutableBufferProxy<LinesVertex>(LinesVertex.SizeInBytes, BindFlags.VertexBuffer);
         private readonly ImmutableBufferProxy<int> indexBuffer = new ImmutableBufferProxy<int>(sizeof(int), BindFlags.IndexBuffer);
+        protected Vector4 lineParams = new Vector4();
+        protected EffectTechnique effectTechnique;
+        protected EffectTransformVariables effectTransforms;
+        protected EffectVectorVariable vViewport, vLineParams; // vFrustum, 
+
         /// <summary>
         /// For subclass override
         /// </summary>
@@ -57,63 +108,26 @@ namespace HelixToolkit.Wpf.SharpDX
                 return indexBuffer;
             }
         }
-        protected EffectTechnique effectTechnique;
-        protected EffectTransformVariables effectTransforms;
-        protected EffectVectorVariable vViewport, vLineParams; // vFrustum, 
 
-        [TypeConverter(typeof(ColorConverter))]
-        public Color Color
+        public LineGeometryModel3D() : base()
         {
-            get { return (Color)this.GetValue(ColorProperty); }
-            set { this.SetValue(ColorProperty, value); }
+            lineParams.X = (float)Thickness;
+            lineParams.Y = (float)Smoothness;
         }
 
-        public static readonly DependencyProperty ColorProperty =
-            DependencyProperty.Register("Color", typeof(Color), typeof(LineGeometryModel3D), new AffectsRenderPropertyMetadata(Color.Black, (o, e) => ((LineGeometryModel3D)o).OnColorChanged()));
-
-        public double Thickness
+        protected override bool CheckGeometry()
         {
-            get { return (double)this.GetValue(ThicknessProperty); }
-            set { this.SetValue(ThicknessProperty, value); }
+            return base.CheckGeometry() && geometryInternal is LineGeometry3D;
         }
-
-        public static readonly DependencyProperty ThicknessProperty =
-            DependencyProperty.Register("Thickness", typeof(double), typeof(LineGeometryModel3D), new AffectsRenderPropertyMetadata(1.0));
-
-        public double Smoothness
-        {
-            get { return (double)this.GetValue(SmoothnessProperty); }
-            set { this.SetValue(SmoothnessProperty, value); }
-        }
-
-        public static readonly DependencyProperty SmoothnessProperty =
-            DependencyProperty.Register("Smoothness", typeof(double), typeof(LineGeometryModel3D), new AffectsRenderPropertyMetadata(0.0));
-
-
-        public double HitTestThickness
-        {
-            get { return (double)this.GetValue(HitTestThicknessProperty); }
-            set { this.SetValue(HitTestThicknessProperty, value); }
-        }
-
-        public static readonly DependencyProperty HitTestThicknessProperty =
-            DependencyProperty.Register("HitTestThickness", typeof(double), typeof(LineGeometryModel3D), new UIPropertyMetadata(1.0));
-
 
         protected override bool CanHitTest(IRenderMatrices context)
         {
-            return base.CanHitTest(context) && geometryInternal != null && geometryInternal.Positions != null && geometryInternal.Positions.Count > 0
-                && geometryInternal is LineGeometry3D && context != null;
+            return base.CanHitTest(context) && context != null;
         }
 
         protected override bool OnHitTest(IRenderMatrices context, Ray rayWS, ref List<HitTestResult> hits)
         {
             var lineGeometry3D = this.geometryInternal as LineGeometry3D;
-            if (lineGeometry3D == null)
-            {
-                return false;
-            }
-
             var result = new LineHitTestResult { IsValid = false, Distance = double.MaxValue };
             var lastDist = double.MaxValue;
             var lineIndex = 0;
@@ -188,8 +202,16 @@ namespace HelixToolkit.Wpf.SharpDX
 
         private void OnColorChanged()
         {
-            if(IsAttached)
+            if (IsAttached)
                 CreateVertexBuffer();
+        }
+
+        protected override void OnCreateGeometryBuffers()
+        {
+            // --- set up buffers            
+            CreateVertexBuffer();
+            // --- set up indexbuffer
+            indexBuffer.CreateBufferFromDataArray(Device, geometryInternal.Indices);
         }
 
         protected override void OnGeometryPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -197,31 +219,16 @@ namespace HelixToolkit.Wpf.SharpDX
             base.OnGeometryPropertyChanged(sender, e);
             if (sender is LineGeometry3D)
             {
-                if (e.PropertyName.Equals(nameof(LineGeometry3D.Positions)))
+                if (e.PropertyName.Equals(nameof(LineGeometry3D.Positions)) || e.PropertyName.Equals(nameof(LineGeometry3D.Colors)) || e.PropertyName.Equals(Geometry3D.VertexBuffer))
                 {
-                    OnUpdateVertexBuffer(CreateLinesVertexArray);
-                }
-                else if (e.PropertyName.Equals(nameof(LineGeometry3D.Colors)))
-                {
-                    OnUpdateVertexBuffer(CreateLinesVertexArray);
+                    CreateVertexBuffer();
                 }
                 else if (e.PropertyName.Equals(nameof(LineGeometry3D.Indices)) || e.PropertyName.Equals(Geometry3D.TriangleBuffer))
                 {
                     indexBuffer.CreateBufferFromDataArray(this.Device, geometryInternal.Indices);
                     InvalidateRender();
                 }
-                else if (e.PropertyName.Equals(Geometry3D.VertexBuffer))
-                {
-                    OnUpdateVertexBuffer(CreateLinesVertexArray);
-                }
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void OnUpdateVertexBuffer(Func<LinesVertex[]> updateFunction)
-        {
-            CreateVertexBuffer();
-            this.InvalidateRender();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -229,11 +236,12 @@ namespace HelixToolkit.Wpf.SharpDX
         {
             var geometry = geometryInternal as LineGeometry3D;
             if (geometry != null && geometry.Positions != null)
-            { 
+            {
                 // --- set up buffers            
                 var data = this.CreateLinesVertexArray();
                 vertexBuffer.CreateBufferFromDataArray(this.Device, data);
             }
+            this.InvalidateRender();
         }
 
         protected override RenderTechnique SetRenderTechnique(IRenderHost host)
@@ -257,23 +265,20 @@ namespace HelixToolkit.Wpf.SharpDX
             effectTechnique = effect.GetTechniqueByName(renderTechnique.Name);
 
             effectTransforms = new EffectTransformVariables(effect);
-            
+
             // --- get geometry
             var geometry = geometryInternal as LineGeometry3D;
 
             // -- set geometry if given
             if (geometry != null)
             {
-                // --- set up buffers            
-                CreateVertexBuffer();
-                // --- set up indexbuffer
-                indexBuffer.CreateBufferFromDataArray(Device, geometry.Indices);
+                OnCreateGeometryBuffers();
             }
             else
             {
                 throw new ArgumentException("Geometry must be LineGeometry3D");
             }
-         
+
 
             // --- set up const variables
             vViewport = effect.GetVariableByName("vViewport").AsVector();
@@ -294,7 +299,7 @@ namespace HelixToolkit.Wpf.SharpDX
             // --- flush
             //Device.ImmediateContext.Flush();
             return true;
-        }        
+        }
 
         /// <summary>
         /// 
@@ -305,7 +310,7 @@ namespace HelixToolkit.Wpf.SharpDX
             indexBuffer.Dispose();
             //Disposer.RemoveAndDispose(ref this.vFrustum);
             Disposer.RemoveAndDispose(ref this.vViewport);
-            Disposer.RemoveAndDispose(ref this.vLineParams);            
+            Disposer.RemoveAndDispose(ref this.vLineParams);
             Disposer.RemoveAndDispose(ref this.rasterState);
 
             this.renderTechnique = null;
@@ -357,9 +362,8 @@ namespace HelixToolkit.Wpf.SharpDX
             this.effectTransforms.mWorld.SetMatrix(ref worldMatrix);
 
             // --- set effect per object const vars
-            var lineParams = new Vector4((float)this.Thickness, (float)this.Smoothness, 0, 0);
             this.vLineParams.Set(lineParams);
-            
+
             // --- set context
             renderContext.DeviceContext.InputAssembler.InputLayout = this.vertexLayout;
             renderContext.DeviceContext.InputAssembler.SetIndexBuffer(this.IndexBuffer.Buffer, Format.R32_UInt, 0);
@@ -380,7 +384,7 @@ namespace HelixToolkit.Wpf.SharpDX
                 }
 
                 // --- INSTANCING: need to set 2 buffers            
-                renderContext.DeviceContext.InputAssembler.SetVertexBuffers(0, new[] 
+                renderContext.DeviceContext.InputAssembler.SetVertexBuffers(0, new[]
                 {
                     new VertexBufferBinding(this.VertexBuffer.Buffer, this.VertexBuffer.StructureSize, 0),
                     new VertexBufferBinding(this.InstanceBuffer.Buffer, this.InstanceBuffer.StructureSize, 0),
@@ -403,14 +407,6 @@ namespace HelixToolkit.Wpf.SharpDX
                 this.effectTechnique.GetPassByIndex(0).Apply(renderContext.DeviceContext);
                 renderContext.DeviceContext.DrawIndexed(this.geometryInternal.Indices.Count, 0, 0);
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override void Dispose()
-        {
-            this.Detach();
         }
 
         /// <summary>

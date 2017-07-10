@@ -28,7 +28,12 @@ namespace HelixToolkit.Wpf.SharpDX
 
     public class MeshGeometryModel3D : MaterialGeometryModel3D
     {
+        #region Dependency Properties
         public static readonly DependencyProperty FrontCounterClockwiseProperty = DependencyProperty.Register("FrontCounterClockwise", typeof(bool), typeof(MeshGeometryModel3D),
+            new AffectsRenderPropertyMetadata(true, RasterStateChanged));
+        public static readonly DependencyProperty CullModeProperty = DependencyProperty.Register("CullMode", typeof(CullMode), typeof(MeshGeometryModel3D), 
+            new AffectsRenderPropertyMetadata(CullMode.None, RasterStateChanged));
+        public static readonly DependencyProperty IsDepthClipEnabledProperty = DependencyProperty.Register("IsDepthClipEnabled", typeof(bool), typeof(MeshGeometryModel3D),
             new AffectsRenderPropertyMetadata(true, RasterStateChanged));
 
         public bool FrontCounterClockwise
@@ -43,8 +48,6 @@ namespace HelixToolkit.Wpf.SharpDX
             }
         }
 
-        public static readonly DependencyProperty CullModeProperty = DependencyProperty.Register("CullMode", typeof(CullMode), typeof(MeshGeometryModel3D), 
-            new AffectsRenderPropertyMetadata(CullMode.None, RasterStateChanged));
 
         public CullMode CullMode
         {
@@ -58,8 +61,6 @@ namespace HelixToolkit.Wpf.SharpDX
             }
         }
 
-        public static readonly DependencyProperty IsDepthClipEnabledProperty = DependencyProperty.Register("IsDepthClipEnabled", typeof(bool), typeof(MeshGeometryModel3D),
-            new AffectsRenderPropertyMetadata(true, RasterStateChanged));
 
         public bool IsDepthClipEnabled
         {
@@ -72,6 +73,7 @@ namespace HelixToolkit.Wpf.SharpDX
                 return (bool)GetValue(IsDepthClipEnabledProperty);
             }
         }
+        #endregion
 
         private DefaultVertex[] vertexArrayBuffer = null;
         private readonly ImmutableBufferProxy<DefaultVertex> vertexBuffer = new ImmutableBufferProxy<DefaultVertex>(DefaultVertex.SizeInBytes, BindFlags.VertexBuffer);
@@ -125,37 +127,36 @@ namespace HelixToolkit.Wpf.SharpDX
             }
         }
 
-        protected override void OnGeometryChanged(DependencyPropertyChangedEventArgs e)
+        protected override void OnCreateGeometryBuffers()
         {
-            base.OnGeometryChanged(e);
+            CreateVertexBuffer(CreateDefaultVertexArray);
+            indexBuffer.CreateBufferFromDataArray(this.Device, geometryInternal.Indices);
         }
 
         protected override void OnGeometryPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             base.OnGeometryPropertyChanged(sender, e);
-            if (sender is MeshGeometry3D)
+
+            if (e.PropertyName.Equals(nameof(MeshGeometry3D.TextureCoordinates)))
             {
-                if (e.PropertyName.Equals(nameof(MeshGeometry3D.TextureCoordinates)))
-                {
-                    OnUpdateVertexBuffer(UpdateTextureOnly);
-                }
-                else if (e.PropertyName.Equals(nameof(MeshGeometry3D.Positions)))
-                {
-                    OnUpdateVertexBuffer(UpdatePositionOnly);
-                }
-                else if (e.PropertyName.Equals(nameof(MeshGeometry3D.Colors)))
-                {
-                    OnUpdateVertexBuffer(UpdateColorsOnly);
-                }
-                else if (e.PropertyName.Equals(nameof(MeshGeometry3D.Indices)) || e.PropertyName.Equals(Geometry3D.TriangleBuffer))
-                {
-                    indexBuffer.CreateBufferFromDataArray(this.Device, this.geometryInternal.Indices);
-                    InvalidateRender();
-                }
-                else if (e.PropertyName.Equals(Geometry3D.VertexBuffer))
-                {
-                    OnUpdateVertexBuffer(CreateDefaultVertexArray);
-                }
+                OnUpdateVertexBuffer(UpdateTextureOnly);
+            }
+            else if (e.PropertyName.Equals(nameof(MeshGeometry3D.Positions)))
+            {
+                OnUpdateVertexBuffer(UpdatePositionOnly);
+            }
+            else if (e.PropertyName.Equals(nameof(MeshGeometry3D.Colors)))
+            {
+                OnUpdateVertexBuffer(UpdateColorsOnly);
+            }
+            else if (e.PropertyName.Equals(nameof(MeshGeometry3D.Indices)) || e.PropertyName.Equals(Geometry3D.TriangleBuffer))
+            {
+                indexBuffer.CreateBufferFromDataArray(this.Device, this.geometryInternal.Indices);
+                InvalidateRender();
+            }
+            else if (e.PropertyName.Equals(Geometry3D.VertexBuffer))
+            {
+                OnUpdateVertexBuffer(CreateDefaultVertexArray);
             }
         }
 
@@ -193,8 +194,7 @@ namespace HelixToolkit.Wpf.SharpDX
                 //throw new HelixToolkitException("Geometry not found!");                
 
                 // --- init vertex buffer
-                CreateVertexBuffer(CreateDefaultVertexArray);
-                indexBuffer.CreateBufferFromDataArray(this.Device, geometry.Indices);
+                OnCreateGeometryBuffers();
             }
             else
             {
@@ -233,14 +233,6 @@ namespace HelixToolkit.Wpf.SharpDX
         {
             vertexBuffer.Dispose();
             indexBuffer.Dispose();
-            Disposer.RemoveAndDispose(ref this.effectMaterial);
-            Disposer.RemoveAndDispose(ref this.effectTransforms);
-            Disposer.RemoveAndDispose(ref this.bHasInstances);
-
-            this.renderTechnique = null;
-            this.effectTechnique = null;
-            this.vertexLayout = null;
-
             base.OnDetach();
         }
         
@@ -260,7 +252,7 @@ namespace HelixToolkit.Wpf.SharpDX
             this.effectMaterial.bHasShadowMapVariable.Set(this.hasShadowMap);
 
             // --- set material params      
-            this.effectMaterial.AttachMaterial();
+            this.effectMaterial.AttachMaterial(geometryInternal as MeshGeometry3D);
 
             this.bHasInstances.Set(this.hasInstances);
             // --- set context
@@ -285,29 +277,47 @@ namespace HelixToolkit.Wpf.SharpDX
                     new VertexBufferBinding(this.VertexBuffer.Buffer, this.VertexBuffer.StructureSize, 0),
                     new VertexBufferBinding(this.InstanceBuffer.Buffer, this.InstanceBuffer.StructureSize, 0),
                 });
-
-                // --- render the geometry
-                this.effectTechnique.GetPassByIndex(0).Apply(renderContext.DeviceContext);
-                // --- draw
-                renderContext.DeviceContext.DrawIndexedInstanced(this.geometryInternal.Indices.Count, this.instanceInternal.Count, 0, 0, 0);
+                OnInstancedDrawCall(renderContext);
                 this.bHasInstances.Set(false);
             }
             else
             {
                 // --- bind buffer                
                 renderContext.DeviceContext.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(this.VertexBuffer.Buffer, this.VertexBuffer.StructureSize, 0));
-                // --- render the geometry
-                // 
-                var pass = this.effectTechnique.GetPassByIndex(0);
-                pass.Apply(renderContext.DeviceContext);
-                // --- draw
-                renderContext.DeviceContext.DrawIndexed(this.geometryInternal.Indices.Count, 0, 0);
+
+                OnDrawCall(renderContext);
             }
         }
 
-        protected override bool CanHitTest(IRenderMatrices context)
+        /// <summary>
+        /// Just before calling DrawIndexedInstanced. All buffers are attached. Override to use for multipass drawing
+        /// </summary>
+        /// <param name="renderContext"></param>
+        protected virtual void OnInstancedDrawCall(RenderContext renderContext)
         {
-            return base.CanHitTest(context) && geometryInternal is MeshGeometry3D && geometryInternal.Indices != null && geometryInternal.Indices.Count > 0;
+            // --- render the geometry
+            this.effectTechnique.GetPassByIndex(0).Apply(renderContext.DeviceContext);
+            // --- draw
+            renderContext.DeviceContext.DrawIndexedInstanced(this.geometryInternal.Indices.Count, this.instanceInternal.Count, 0, 0, 0);
+        }
+
+        /// <summary>
+        /// Just before calling DrawIndexed. All buffers are attached. Override to use for multipass drawing
+        /// </summary>
+        /// <param name="renderContext"></param>
+        protected virtual void OnDrawCall(RenderContext renderContext)
+        {
+            // --- render the geometry
+            // 
+            var pass = this.effectTechnique.GetPassByIndex(0);
+            pass.Apply(renderContext.DeviceContext);
+            // --- draw
+            renderContext.DeviceContext.DrawIndexed(this.geometryInternal.Indices.Count, 0, 0);
+        }
+
+        protected override bool CheckGeometry()
+        {
+            return base.CheckGeometry() && geometryInternal is MeshGeometry3D;
         }
 
         protected override bool OnHitTest(IRenderMatrices context, Ray rayWS, ref List<HitTestResult> hits)
@@ -328,7 +338,7 @@ namespace HelixToolkit.Wpf.SharpDX
                     var m = this.modelMatrix;
 
                     // put bounds to world space
-                    var b = BoundingBox.FromPoints(this.Bounds.GetCorners().Select(x => Vector3.TransformCoordinate(x, m)).ToArray());
+                    var b = this.Bounds.Transform(m);// BoundingBox.FromPoints(this.Bounds.GetCorners().Select(x => Vector3.TransformCoordinate(x, m)).ToArray());
 
                     //var b = this.Bounds;
 
@@ -374,19 +384,11 @@ namespace HelixToolkit.Wpf.SharpDX
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public override void Dispose()
-        {
-            this.Detach();
-        }
-
-        /// <summary>
         /// Creates a <see cref="T:DefaultVertex[]"/>.
         /// </summary>
         private DefaultVertex[] CreateDefaultVertexArray()
         {
-            var geometry = (MeshGeometry3D)this.geometryInternal;
+            var geometry = this.geometryInternal as MeshGeometry3D;
             var positions = geometry.Positions.GetEnumerator();
             var vertexCount = geometry.Positions.Count;
 
@@ -420,7 +422,7 @@ namespace HelixToolkit.Wpf.SharpDX
 
         private DefaultVertex[] UpdateTextureOnly()
         {
-            var geometry = (MeshGeometry3D)this.geometryInternal;
+            var geometry = this.geometryInternal as MeshGeometry3D;
             var vertexCount = geometry.Positions.Count;
             var texScale = this.TextureCoodScale;
             if (vertexArrayBuffer != null && geometry.TextureCoordinates != null && vertexArrayBuffer.Length >= vertexCount)
@@ -439,7 +441,7 @@ namespace HelixToolkit.Wpf.SharpDX
 
         private DefaultVertex[] UpdatePositionOnly()
         {
-            var geometry = (MeshGeometry3D)this.geometryInternal;
+            var geometry = this.geometryInternal as MeshGeometry3D;
             var vertexCount = geometry.Positions.Count;
             if (vertexArrayBuffer != null && vertexArrayBuffer.Length >= vertexCount)
             {

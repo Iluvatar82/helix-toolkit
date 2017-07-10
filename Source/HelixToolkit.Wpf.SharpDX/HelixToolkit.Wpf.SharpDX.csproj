@@ -87,40 +87,40 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cyotek.Drawing.BitmapFont, Version=1.3.1.0, Culture=neutral, PublicKeyToken=58daa28b0b2de221, processorArchitecture=MSIL">
-      <HintPath>..\packages\Cyotek.Drawing.BitmapFont.1.3.1\lib\net20\Cyotek.Drawing.BitmapFont.dll</HintPath>
+    <Reference Include="Cyotek.Drawing.BitmapFont, Version=1.0.0.0, Culture=neutral, PublicKeyToken=58daa28b0b2de221, processorArchitecture=MSIL">
+      <HintPath>..\packages\Cyotek.Drawing.BitmapFont.1.3.2\lib\net20\Cyotek.Drawing.BitmapFont.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpDX, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.3.1.1\lib\net45\SharpDX.dll</HintPath>
+    <Reference Include="SharpDX, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.4.0.1\lib\net45\SharpDX.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpDX.D3DCompiler, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.D3DCompiler.3.1.1\lib\net45\SharpDX.D3DCompiler.dll</HintPath>
+    <Reference Include="SharpDX.D3DCompiler, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.D3DCompiler.4.0.1\lib\net45\SharpDX.D3DCompiler.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpDX.Direct2D1, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.Direct2D1.3.1.1\lib\net45\SharpDX.Direct2D1.dll</HintPath>
+    <Reference Include="SharpDX.Direct2D1, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Direct2D1.4.0.1\lib\net45\SharpDX.Direct2D1.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpDX.Direct3D11, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.Direct3D11.3.1.1\lib\net45\SharpDX.Direct3D11.dll</HintPath>
+    <Reference Include="SharpDX.Direct3D11, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Direct3D11.4.0.1\lib\net45\SharpDX.Direct3D11.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpDX.Direct3D11.Effects, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.Direct3D11.Effects.3.1.1\lib\net45\SharpDX.Direct3D11.Effects.dll</HintPath>
+    <Reference Include="SharpDX.Direct3D11.Effects, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Direct3D11.Effects.4.0.1\lib\net45\SharpDX.Direct3D11.Effects.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpDX.Direct3D9, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.Direct3D9.3.1.1\lib\net45\SharpDX.Direct3D9.dll</HintPath>
+    <Reference Include="SharpDX.Direct3D9, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Direct3D9.4.0.1\lib\net45\SharpDX.Direct3D9.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpDX.DXGI, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.DXGI.3.1.1\lib\net45\SharpDX.DXGI.dll</HintPath>
+    <Reference Include="SharpDX.DXGI, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.DXGI.4.0.1\lib\net45\SharpDX.DXGI.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SharpDX.Mathematics, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpDX.Mathematics.3.1.1\lib\net45\SharpDX.Mathematics.dll</HintPath>
+    <Reference Include="SharpDX.Mathematics, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Mathematics.4.0.1\lib\net45\SharpDX.Mathematics.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -191,9 +191,11 @@
     <Compile Include="Model\Elements3D\InstancingBillboardModel3D.cs" />
     <Compile Include="Model\Elements3D\InstancingMeshGeometryModel3D.cs" />
     <Compile Include="Model\Elements3D\OctreeLineGeometryModel3D.cs" />
+    <Compile Include="Model\Elements3D\OutLineMeshGeometryModel3D.cs" />
     <Compile Include="Model\Elements3D\ParticleStormModel3D.cs" />
     <Compile Include="Model\Elements3D\PatchGeometryModel3D.cs" />
     <Compile Include="Model\Elements3D\PointGeometryModel3D.cs" />
+    <Compile Include="Model\Elements3D\XRayMeshGeometryModel3D.cs" />
     <Compile Include="Model\Geometry\BillboardBase.cs" />
     <Compile Include="Model\Geometry\BillboardSingleImage3D.cs" />
     <Compile Include="Model\Geometry\BillboardSingleText3D.cs" />
@@ -216,7 +218,6 @@
     <Compile Include="Utilities\OffReader.cs" />
     <Compile Include="Utilities\RelayExceptionEventArgs.cs" />
     <Compile Include="Utilities\StudioReader.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Model\Camera\Camera.cs" />
     <Compile Include="Model\Camera\MatrixCamera.cs" />
     <Compile Include="Model\Camera\OrthographicCamera.cs" />
@@ -303,6 +304,15 @@
     <Content Include="Shaders\Particles.fx" />
     <Content Include="Shaders\PixelShaders.fx" />
     <Content Include="Shaders\VertexShaders.fx" />
+    <Content Include="sharpdx_direct3d11_1_effects_arm.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="sharpdx_direct3d11_1_effects_x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="sharpdx_direct3d11_1_effects_x86.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="x64\d3dcompiler_47.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -319,15 +329,6 @@
     <EmbeddedResource Include="Shaders\_compile_instructions.txt" />
     <Content Include="Shaders\Points.fx" />
     <EmbeddedResource Include="Textures\arial.png" />
-    <Content Include="sharpdx_direct3d11_1_effects_arm.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="sharpdx_direct3d11_1_effects_x64.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="sharpdx_direct3d11_1_effects_x86.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Textures\random4x4_dot3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -342,6 +343,10 @@
     <ProjectReference Include="..\HelixToolkit.Wpf\HelixToolkit.Wpf.csproj">
       <Project>{3f3b4548-a9db-4874-86f7-e7c4fec8a351}</Project>
       <Name>HelixToolkit.Wpf</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HelixToolkit\HelixToolkit.csproj">
+      <Project>{7c0e987e-cc34-4b19-ba6b-b381aeabb530}</Project>
+      <Name>HelixToolkit</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\HelixToolkit.Shared\HelixToolkit.Shared.projitems" Label="Shared" />

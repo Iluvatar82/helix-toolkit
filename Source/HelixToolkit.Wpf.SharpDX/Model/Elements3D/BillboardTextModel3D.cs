@@ -12,27 +12,18 @@ namespace HelixToolkit.Wpf.SharpDX
 {
     public class BillboardTextModel3D : MaterialGeometryModel3D
     {
-        #region Private Class Data Members
-        private readonly ImmutableBufferProxy<BillboardVertex> vertexBuffer = new ImmutableBufferProxy<BillboardVertex>(BillboardVertex.SizeInBytes, BindFlags.VertexBuffer);
-        private EffectVectorVariable vViewport;
-        private EffectScalarVariable bHasBillboardTexture;
-        private ShaderResourceView billboardTextureView;
-        private ShaderResourceView billboardAlphaTextureView;
-        private EffectShaderResourceVariable billboardTextureVariable;
-        private EffectShaderResourceVariable billboardAlphaTextureVariable;
-        private EffectScalarVariable bHasBillboardAlphaTexture;
-        private BillboardType billboardType;
-        private BillboardVertex[] vertexArrayBuffer;
-        private EffectScalarVariable bFixedSizeVariable;
-        #endregion
-
+        #region Dependency Properties
         /// <summary>
         /// Fixed sized billboard. Default = true. 
         /// <para>When FixedSize = true, the billboard render size will be scale to normalized device coordinates(screen) size</para>
         /// <para>When FixedSize = false, the billboard render size will be actual size in 3D world space</para>
         /// </summary>
         public static readonly DependencyProperty FixedSizeProperty = DependencyProperty.Register("FixedSize", typeof(bool), typeof(BillboardTextModel3D),
-            new AffectsRenderPropertyMetadata(true));
+            new AffectsRenderPropertyMetadata(true,
+                (d,e)=> 
+                {
+                    (d as BillboardTextModel3D).fixedSize = (bool)e.NewValue;
+                }));
 
         /// <summary>
         /// Fixed sized billboard. Default = true. 
@@ -50,6 +41,24 @@ namespace HelixToolkit.Wpf.SharpDX
                 return (bool)GetValue(FixedSizeProperty);
             }
         }
+        #endregion
+        #region Private Class Data Members
+        private readonly ImmutableBufferProxy<BillboardVertex> vertexBuffer = new ImmutableBufferProxy<BillboardVertex>(BillboardVertex.SizeInBytes, BindFlags.VertexBuffer);
+        private EffectVectorVariable vViewport;
+        private EffectScalarVariable bHasBillboardTexture;
+        private ShaderResourceView billboardTextureView;
+        private ShaderResourceView billboardAlphaTextureView;
+        private EffectShaderResourceVariable billboardTextureVariable;
+        private EffectShaderResourceVariable billboardAlphaTextureVariable;
+        private EffectScalarVariable bHasBillboardAlphaTexture;
+        private BillboardType billboardType;
+        private BillboardVertex[] vertexArrayBuffer;
+        private EffectScalarVariable bFixedSizeVariable;
+        #endregion
+
+        protected bool fixedSize = true;
+
+
         /// <summary>
         /// For subclass override
         /// </summary>
@@ -276,6 +285,11 @@ namespace HelixToolkit.Wpf.SharpDX
             }
         }
 
+        protected override void OnCreateGeometryBuffers()
+        {
+            vertexBuffer.CreateBufferFromDataArray(this.Device, CreateBillboardVertexArray());
+        }
+
         protected override bool OnAttach(IRenderHost host)
         {
             // --- attach
@@ -299,7 +313,7 @@ namespace HelixToolkit.Wpf.SharpDX
             {
                 throw new System.Exception("Geometry must implement IBillboardText");
             }
-            vertexBuffer.CreateBufferFromDataArray(this.Device, CreateBillboardVertexArray());
+            OnCreateGeometryBuffers();
             // --- material 
             // this.AttachMaterial();
             this.bHasBillboardTexture = effect.GetVariableByName("bHasTexture").AsScalar();
@@ -350,7 +364,7 @@ namespace HelixToolkit.Wpf.SharpDX
             // --- set constant paramerers             
             var worldMatrix = modelMatrix * renderContext.worldMatrix;
             effectTransforms.mWorld.SetMatrix(ref worldMatrix);
-            bFixedSizeVariable?.Set(FixedSize);
+            bFixedSizeVariable?.Set(fixedSize);
             // --- check shadowmaps
             //this.hasShadowMap = this.renderHost.IsShadowMapEnabled;
             //this.effectMaterial.bHasShadowMapVariable.Set(this.hasShadowMap);
