@@ -19,7 +19,7 @@
             RenderTechnique="{Binding RenderTechnique}"
             ShowCoordinateSystem="False"
             ShowFrameRate="True"
-            TextBrush="Black"
+            TextBrush="Black" EffectsManager="{Binding EffectsManager}"
             UseDefaultGestures="False">
             <hx:Viewport3DX.InputBindings>
                 <KeyBinding Key="B" Command="hx:ViewportCommands.BackView" />
@@ -43,7 +43,6 @@
                 Geometry="{Binding InnerModel}" CullMode="Front" FrontCounterClockwise="True"
                 Material="{Binding InnerModelMaterial}" />
             <hx:MeshGeometryModel3D FillMode="{Binding FillMode}"
-                CullMode="Back"
                 Geometry="{Binding Model}"
                 Material="{Binding ModelMaterial}" />
 

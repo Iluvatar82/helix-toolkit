@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
+using HelixToolkit.Wpf.SharpDX.Model;
 using NUnit.Framework;
 using SharpDX;
 
@@ -307,13 +308,15 @@ map_bump " + prefix + Path.GetFileName(tempTexBump) + @"
                 }
 
                 var model = _objReader.Read(tempObj);
-                var material = (PhongMaterial)model[0].Material;
-
-                var diffuseSource = ((FileStream)material.DiffuseMap).Name;
-                Assert.AreEqual(tempTexDiffuse, diffuseSource);
-
-                var bumpSource = ((FileStream)material.NormalMap).Name;
-                Assert.AreEqual(tempTexBump, bumpSource);
+                var material = (PhongMaterialCore)model[0].Material;
+                using(var fs = new FileStream(tempTexDiffuse, FileMode.Open))
+                {
+                    Compare(fs, material.DiffuseMap);
+                }
+                using (var fs = new FileStream(tempTexBump, FileMode.Open))
+                {
+                    Compare(fs, material.NormalMap);
+                }
             }
             finally
             {
@@ -321,6 +324,17 @@ map_bump " + prefix + Path.GetFileName(tempTexBump) + @"
                 File.Delete(tempMtl);
                 //File.Delete(tempTexDiffuse);
                 //File.Delete(tempTexBump);
+            }
+        }
+
+        public void Compare(Stream s1, Stream s2)
+        {
+            Assert.AreEqual(s1.Length, s2.Length);
+            s2.Position = 0;
+            s1.Position = 0;
+            for(int i=0; i<s1.Length; ++i)
+            {
+                Assert.AreEqual(s1.ReadByte(), s2.ReadByte());
             }
         }
 
